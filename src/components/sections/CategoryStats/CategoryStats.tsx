@@ -14,6 +14,7 @@ import {
   CategoryList,
   CategoryItem,
   CategoryName,
+  CategoryLink,
   CategoryStatus,
   CategoryError,
   ButtonContainer
@@ -21,46 +22,58 @@ import {
 
 const CategoryStats: React.FC<CategoryStatsProps> = ({ slugs }) => {
   const { stats, loading, error, fetchCategories, resetStats } = useCategoriesStore();
-  const [batchSize, setBatchSize] = useState(10); // Tamaño del lote para procesar
+  const [batchSize, setBatchSize] = useState(10);
+  const [filter, setFilter] = useState<'all' | 'valid' | 'invalid'>('all');
   
   useEffect(() => {
-    // Limpiar estadísticas al montar el componente
     resetStats();
   }, [resetStats]);
   
   const handleStartAnalysis = () => {
-    // Limitar el número de categorías a procesar para evitar sobrecarga
     const limitedSlugs = slugs.slice(0, batchSize);
     fetchCategories(limitedSlugs);
   };
   
   const progress = stats.total > 0 ? (stats.processed / stats.total) * 100 : 0;
   
+  // Filtrar categorías según la selección
+  const filteredCategories = Object.entries(stats.categories).filter(([_, data]) => {
+    if (filter === 'all') return true;
+    if (filter === 'valid') return data.status === 'OK';
+    if (filter === 'invalid') return data.status === 'KO';
+    return true;
+  });
+  
   return (
     <Container>
       <Header>
-        <Title>Análisis de Categorías de Cecotec</Title>
-        <Description>Verifica qué categorías tienen productos y cuáles no.</Description>
+        <Title>Análisis de Subcategorías de Cecotec</Title>
+        <Description>
+          Verificando la disponibilidad de productos en {slugs.length} subcategorías.
+        </Description>
       </Header>
       
       <ButtonContainer>
-        <div style={{ marginBottom: '12px' }}>
-          <label htmlFor="batchSize" style={{ marginRight: '8px' }}>
-            Número de categorías a analizar:
-          </label>
-          <select 
-            id="batchSize"
-            value={batchSize}
-            onChange={(e) => setBatchSize(Number(e.target.value))}
-            disabled={loading}
-          >
-            <option value="5">5 categorías</option>
-            <option value="10">10 categorías</option>
-            <option value="20">20 categorías</option>
-            <option value="50">50 categorías</option>
-            <option value="100">100 categorías</option>
-            <option value={slugs.length}>Todas ({slugs.length} categorías)</option>
-          </select>
+        <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
+          <div>
+            <label htmlFor="batchSize" style={{ marginRight: '8px' }}>
+              Número de categorías a analizar:
+            </label>
+            <select 
+              id="batchSize"
+              value={batchSize}
+              onChange={(e) => setBatchSize(Number(e.target.value))}
+              disabled={loading}
+              style={{ padding: '4px 8px' }}
+            >
+              <option value="5">5 categorías</option>
+              <option value="10">10 categorías</option>
+              <option value="20">20 categorías</option>
+              <option value="50">50 categorías</option>
+              <option value="100">100 categorías</option>
+              <option value={slugs.length}>Todas ({slugs.length} categorías)</option>
+            </select>
+          </div>
         </div>
         
         <button 
@@ -72,8 +85,8 @@ const CategoryStats: React.FC<CategoryStatsProps> = ({ slugs }) => {
       </ButtonContainer>
       
       {error && (
-        <div style={{ color: '#c5221f', marginBottom: '16px' }}>
-          Error: {error}
+        <div style={{ color: '#c5221f', marginBottom: '16px', padding: '12px', backgroundColor: '#fce8e6', borderRadius: '4px' }}>
+          <strong>Error:</strong> {error}
         </div>
       )}
       
@@ -81,17 +94,17 @@ const CategoryStats: React.FC<CategoryStatsProps> = ({ slugs }) => {
         <>
           <StatsGrid>
             <StatsCard 
-              title="Total Categorías" 
+              title="Total Subcategorías" 
               value={stats.total} 
               color="primary" 
             />
             <StatsCard 
-              title="Categorías con Productos" 
+              title="Con Productos" 
               value={stats.valid} 
               color="success" 
             />
             <StatsCard 
-              title="Categorías sin Productos" 
+              title="Sin Productos" 
               value={stats.invalid} 
               color="danger" 
             />
@@ -104,7 +117,7 @@ const CategoryStats: React.FC<CategoryStatsProps> = ({ slugs }) => {
           
           <ProgressContainer>
             <ProgressLabel>
-              <span>Progreso</span>
+              <span>Progreso del análisis</span>
               <span>{Math.round(progress)}%</span>
             </ProgressLabel>
             <ProgressBar progress={progress} />
@@ -112,11 +125,47 @@ const CategoryStats: React.FC<CategoryStatsProps> = ({ slugs }) => {
           
           {stats.processed > 0 && (
             <>
-              <h2 style={{ margin: '24px 0 16px' }}>Resultados:</h2>
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                margin: '24px 0 16px' 
+              }}>
+                <h2>Resultados:</h2>
+                <div>
+                  <label htmlFor="filter" style={{ marginRight: '8px' }}>
+                    Filtrar:
+                  </label>
+                  <select 
+                    id="filter"
+                    value={filter}
+                    onChange={(e) => setFilter(e.target.value as 'all' | 'valid' | 'invalid')}
+                    style={{ padding: '4px 8px' }}
+                  >
+                    <option value="all">Todas</option>
+                    <option value="valid">Con Productos</option>
+                    <option value="invalid">Sin Productos</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div style={{ margin: '12px 0', fontSize: '14px', color: '#5f6368' }}>
+                Mostrando {filteredCategories.length} de {Object.keys(stats.categories).length} categorías
+              </div>
+              
               <CategoryList>
-                {Object.entries(stats.categories).map(([slug, data]) => (
+                {filteredCategories.map(([slug, data]) => (
                   <CategoryItem key={slug} status={data.status}>
-                    <CategoryName>{slug}</CategoryName>
+                    <CategoryName>
+                      {slug}
+                      <CategoryLink 
+                        href={`https://cecotec.es/es/${slug}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                      >
+                        Ver en web
+                      </CategoryLink>
+                    </CategoryName>
                     <CategoryStatus status={data.status}>
                       {data.status === 'OK' ? 'Con Productos' : 'Sin Productos'}
                     </CategoryStatus>

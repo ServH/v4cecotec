@@ -43,15 +43,36 @@ export const CategoryList = styled.div`
 `;
 
 export const CategoryItem = styled.div<{ status: 'OK' | 'KO' }>`
-  padding: 12px;
-  border-radius: 4px;
+  padding: 16px;
+  border-radius: 6px;
   background-color: ${({ status }) => status === 'OK' ? '#e6f4ea' : '#fce8e6'};
   border-left: 4px solid ${({ status }) => status === 'OK' ? '#0d652d' : '#c5221f'};
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
 `;
 
 export const CategoryName = styled.div`
   font-weight: 500;
-  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+export const CategoryLink = styled.a`
+  color: #1a73e8;
+  font-size: 14px;
+  text-decoration: none;
+  
+  &:hover {
+    text-decoration: underline;
+  }
 `;
 
 export const CategoryStatus = styled.div<{ status: 'OK' | 'KO' }>`
