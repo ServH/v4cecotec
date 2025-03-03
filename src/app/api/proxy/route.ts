@@ -1,9 +1,8 @@
-// src/app/api/proxy/route.ts (actualización)
+// src/app/api/proxy/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 
 export async function GET(request: NextRequest) {
-  // Obtener la categoría de los parámetros de la URL
   const searchParams = request.nextUrl.searchParams;
   const category = searchParams.get('category');
   
@@ -15,33 +14,37 @@ export async function GET(request: NextRequest) {
   }
   
   try {
-    // Hacer la petición al endpoint original
+    console.log(`Solicitando datos para la categoría: ${category}`);
     const response = await axios.get(
       `https://content.cecotec.es/api/v4/products/products-list-by-category/?category=${category}`,
       {
-        timeout: 10000, // 10 segundos de timeout
-        validateStatus: function (status) {
-          return status < 500; // Resolver solo si el código de estado es menor que 500
+        timeout: 15000, // Aumentamos el timeout a 15 segundos
+        headers: {
+          'Accept': 'application/json',
+          'Cache-Control': 'no-cache'
         }
       }
     );
     
-    // Comprobar si el status es 404 (recurso no encontrado)
-    if (response.status === 404) {
+    // Log para depuración
+    console.log(`Respuesta para ${category}: Status ${response.status}, Datos:`, 
+      response.data ? 
+        (Object.keys(response.data).length > 0 ? 'Tiene datos' : 'Objeto vacío') 
+        : 'Sin datos'
+    );
+    
+    if (response.status === 200) {
+      return NextResponse.json(response.data);
+    } else {
       return NextResponse.json(
-        { error: 'Categoría no encontrada', status: 404 },
-        { status: 404 }
+        { error: `Código de estado inesperado: ${response.status}` },
+        { status: response.status }
       );
     }
-    
-    // Devolver los datos
-    return NextResponse.json(response.data);
   } catch (error) {
     console.error(`Error al obtener datos para la categoría ${category}:`, error);
     
-    // Si es un error de axios
     if (axios.isAxiosError(error)) {
-      // Si es un timeout
       if (error.code === 'ECONNABORTED') {
         return NextResponse.json(
           { error: 'Tiempo de espera agotado', status: 408 },
@@ -55,7 +58,6 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    // Error genérico
     return NextResponse.json(
       { error: 'Error al obtener datos de la categoría' },
       { status: 500 }

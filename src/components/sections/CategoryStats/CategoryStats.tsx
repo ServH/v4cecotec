@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { CategoryStatsProps } from './CategoryStats.types';
 import { useCategoriesStore } from '@/stores/categories';
+import { getCategoryPath } from '@/services/api';
 import StatsCard from '@/components/common/StatsCard';
 import ProgressBar from '@/components/common/ProgressBar';
 import {
@@ -20,8 +21,18 @@ import {
   ButtonContainer
 } from './CategoryStats.styles';
 
-const CategoryStats: React.FC<CategoryStatsProps> = ({ slugs }) => {
-  const { stats, loading, error, fetchCategories, resetStats } = useCategoriesStore();
+const CategoryStats: React.FC<CategoryStatsProps> = ({ slugs, categoriesTree }) => {
+  const { 
+    stats, 
+    loading, 
+    analyzing,
+    currentCategory,
+    error, 
+    fetchCategories, 
+    resetStats, 
+    clearCache,
+    analyzeIndividualCategory
+  } = useCategoriesStore();
   const [batchSize, setBatchSize] = useState(10);
   const [filter, setFilter] = useState<'all' | 'valid' | 'invalid'>('all');
   
@@ -32,6 +43,18 @@ const CategoryStats: React.FC<CategoryStatsProps> = ({ slugs }) => {
   const handleStartAnalysis = () => {
     const limitedSlugs = slugs.slice(0, batchSize);
     fetchCategories(limitedSlugs);
+  };
+
+  const handleClearCacheAndAnalyze = () => {
+    clearCache();
+    if (stats.processed > 0) {
+      const limitedSlugs = Object.keys(stats.categories).slice(0, batchSize);
+      fetchCategories(limitedSlugs);
+    }
+  };
+  
+  const handleRetryCategory = (slug: string) => {
+    analyzeIndividualCategory(slug);
   };
   
   const progress = stats.total > 0 ? (stats.processed / stats.total) * 100 : 0;
@@ -49,7 +72,7 @@ const CategoryStats: React.FC<CategoryStatsProps> = ({ slugs }) => {
       <Header>
         <Title>Análisis de Subcategorías de Cecotec</Title>
         <Description>
-          Verificando la disponibilidad de productos en {slugs.length} subcategorías.
+          Verificando la disponibilidad de productos en {slugs.length} categorías hoja (sin subcategorías).
         </Description>
       </Header>
       
@@ -76,12 +99,25 @@ const CategoryStats: React.FC<CategoryStatsProps> = ({ slugs }) => {
           </div>
         </div>
         
-        <button 
-          onClick={handleStartAnalysis}
-          disabled={loading}
-        >
-          {loading ? 'Analizando...' : 'Iniciar Análisis'}
-        </button>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button 
+            onClick={handleStartAnalysis}
+            disabled={loading || analyzing}
+          >
+            {loading ? 'Analizando...' : 'Iniciar Análisis'}
+          </button>
+          
+          <button 
+            onClick={handleClearCacheAndAnalyze}
+            disabled={loading || analyzing}
+            style={{ 
+              backgroundColor: '#e67700', 
+              color: 'white' 
+            }}
+          >
+            Limpiar Caché y Reiniciar
+          </button>
+        </div>
       </ButtonContainer>
       
       {error && (
@@ -89,12 +125,18 @@ const CategoryStats: React.FC<CategoryStatsProps> = ({ slugs }) => {
           <strong>Error:</strong> {error}
         </div>
       )}
+
+      {analyzing && (
+        <div style={{ color: '#1a73e8', marginBottom: '16px', padding: '12px', backgroundColor: '#e8f0fe', borderRadius: '4px' }}>
+          <strong>Analizando categoría:</strong> {currentCategory}
+        </div>
+      )}
       
       {(stats.processed > 0 || loading) && (
         <>
           <StatsGrid>
             <StatsCard 
-              title="Total Subcategorías" 
+              title="Total Categorías" 
               value={stats.total} 
               color="primary" 
             />
@@ -154,26 +196,81 @@ const CategoryStats: React.FC<CategoryStatsProps> = ({ slugs }) => {
               </div>
               
               <CategoryList>
-                {filteredCategories.map(([slug, data]) => (
-                  <CategoryItem key={slug} status={data.status}>
-                    <CategoryName>
-                      {slug}
-                      <CategoryLink 
-                        href={`https://cecotec.es/es/${slug}`} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                      >
-                        Ver en web
-                      </CategoryLink>
-                    </CategoryName>
-                    <CategoryStatus status={data.status}>
-                      {data.status === 'OK' ? 'Con Productos' : 'Sin Productos'}
-                    </CategoryStatus>
-                    {data.error && (
-                      <CategoryError>{data.error}</CategoryError>
-                    )}
-                  </CategoryItem>
-                ))}
+                {filteredCategories.map(([slug, data]) => {
+                  // Obtener la ruta de la categoría
+                  const categoryPath = getCategoryPath(categoriesTree, slug);
+                  
+                  return (
+                    <CategoryItem key={slug} status={data.status}>
+                      <div style={{ 
+                        fontSize: '12px', 
+                        color: '#5f6368', 
+                        marginBottom: '4px',
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '4px'
+                      }}>
+                        {categoryPath.map((segment, index) => (
+                          <React.Fragment key={index}>
+                            {index > 0 && <span style={{ margin: '0 2px' }}>&gt;</span>}
+                            <span>{segment}</span>
+                          </React.Fragment>
+                        ))}
+                      </div>
+                      <CategoryName>
+                        {slug}
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button
+                            onClick={() => handleRetryCategory(slug)}
+                            disabled={analyzing}
+                            style={{ 
+                              padding: '2px 6px', 
+                              fontSize: '12px',
+                              background: '#f1f3f4',
+                              color: '#202124',
+                              border: 'none',
+                              borderRadius: '4px',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            Reanalizar
+                          </button>
+                          <CategoryLink 
+                            href={`https://cecotec.es/es/${slug}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                          >
+                            Ver en web
+                          </CategoryLink>
+                        </div>
+                      </CategoryName>
+                      <CategoryStatus status={data.status}>
+                        {data.status === 'OK' ? 'Con Productos' : 'Sin Productos'}
+                      </CategoryStatus>
+                      {data.error && (
+                        <CategoryError>{data.error}</CategoryError>
+                      )}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px' }}>
+                        <CategoryLink 
+                          href={`/api/proxy?category=${slug}`}
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{ fontSize: '12px' }}
+                        >
+                          Ver API
+                        </CategoryLink>
+                        <CategoryLink 
+                          href={`https://content.cecotec.es/api/v4/products/products-list-by-category/?category=${slug}`}
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{ fontSize: '12px' }}
+                        >
+                          API Original
+                        </CategoryLink>
+                      </div>
+                    </CategoryItem>
+                  );
+                })}
               </CategoryList>
             </>
           )}

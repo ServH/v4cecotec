@@ -1,9 +1,9 @@
 import { create } from 'zustand';
-import { fetchCategoryData } from '@/services/api';
+import { fetchCategoryData, analyzeCategory } from '@/services/api';
 import { CategoriesStore } from './categories.types';
 
-// Caché en memoria temporal (después implementaremos Redis)
-const cache: Record<string, any> = {};
+// Caché en memoria temporal
+let cache: Record<string, any> = {};
 
 export const useCategoriesStore = create<CategoriesStore>((set, get) => ({
   stats: {
@@ -14,6 +14,8 @@ export const useCategoriesStore = create<CategoriesStore>((set, get) => ({
     categories: {}
   },
   loading: false,
+  analyzing: false,
+  currentCategory: '',
   error: null,
 
   fetchCategories: async (slugs: string[]) => {
@@ -26,17 +28,18 @@ export const useCategoriesStore = create<CategoriesStore>((set, get) => ({
       let processed = 0;
       const categories: Record<string, { status: 'OK' | 'KO', error?: string }> = {};
       
-      // Procesar cada categoría de forma secuencial para no saturar la API
       for (const slug of slugs) {
         try {
           // Verificar si ya tenemos la respuesta en caché
           let response;
           if (cache[slug]) {
             response = cache[slug];
+            console.log(`Usando caché para ${slug}`);
           } else {
             response = await fetchCategoryData(slug);
             // Guardar en caché
             cache[slug] = response;
+            console.log(`Nueva solicitud para ${slug}: ${response.status}`);
           }
           
           // Actualizar estadísticas
@@ -64,7 +67,6 @@ export const useCategoriesStore = create<CategoriesStore>((set, get) => ({
             }
           });
         } catch (error) {
-          // Si falla una categoría individual, la registramos como inválida pero continuamos
           invalid++;
           categories[slug] = {
             status: 'KO',
@@ -80,6 +82,21 @@ export const useCategoriesStore = create<CategoriesStore>((set, get) => ({
     }
   },
 
+  clearCache: () => {
+    console.log('Limpiando caché');
+    cache = {};
+    set({
+      stats: {
+        total: 0,
+        valid: 0,
+        invalid: 0,
+        processed: 0,
+        categories: {}
+      },
+      error: null
+    });
+  },
+
   resetStats: () => {
     set({
       stats: {
@@ -90,5 +107,45 @@ export const useCategoriesStore = create<CategoriesStore>((set, get) => ({
         categories: {}
       }
     });
+  },
+
+  analyzeIndividualCategory: async (slug: string) => {
+    set({ analyzing: true, currentCategory: slug });
+    
+    try {
+      const response = await analyzeCategory(slug);
+      console.log(`Análisis individual de ${slug} completado:`, response);
+      
+      // Actualizar el estado con el resultado
+      set(state => {
+        const newCategories = {
+          ...state.stats.categories,
+          [slug]: {
+            status: response.status,
+            ...(response.error ? { error: response.error } : {})
+          }
+        };
+        
+        // Recalcular contadores
+        const validCount = Object.values(newCategories).filter(c => c.status === 'OK').length;
+        const invalidCount = Object.values(newCategories).filter(c => c.status === 'KO').length;
+        
+        // Actualizar caché
+        cache[slug] = response;
+        
+        return {
+          stats: {
+            ...state.stats,
+            valid: validCount,
+            invalid: invalidCount,
+            categories: newCategories
+          }
+        };
+      });
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : 'Error en análisis individual' });
+    } finally {
+      set({ analyzing: false, currentCategory: '' });
+    }
   }
 }));

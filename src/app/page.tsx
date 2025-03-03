@@ -1,11 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import CategoryStats from '@/components/sections/CategoryStats'; // Usa importación por defecto
+import CategoryStats from '@/components/sections/CategoryStats';
 import { fetchCategoriesTree, extractChildrenSlugs } from '@/services/api';
+import { Category } from '@/types/category.types';
 
 export default function Home() {
   const [slugs, setSlugs] = useState<string[]>([]);
+  const [categoriesTree, setCategoriesTree] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
@@ -13,12 +15,13 @@ export default function Home() {
       setLoading(true);
       try {
         // Obtener el árbol de categorías
-        const categoriesTree = await fetchCategoriesTree();
+        const tree = await fetchCategoriesTree();
+        setCategoriesTree(tree);
         
-        // Extraer los slugs de todas las categorías hijas
-        const childrenSlugs = extractChildrenSlugs(categoriesTree);
+        // Extraer los slugs de todas las categorías hoja
+        const leafSlugs = extractChildrenSlugs(tree);
         
-        setSlugs(childrenSlugs);
+        setSlugs(leafSlugs);
       } catch (error) {
         console.error('Error al cargar las categorías:', error);
         setSlugs([]);
@@ -52,7 +55,7 @@ export default function Home() {
   
   return (
     <main>
-      <CategoryStats slugs={slugs} />
+      <CategoryStats slugs={slugs} categoriesTree={categoriesTree} />
     </main>
   );
 }
