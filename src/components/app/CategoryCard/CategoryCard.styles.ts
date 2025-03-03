@@ -1,6 +1,5 @@
 import styled from 'styled-components';
 import { theme } from '@/styles/theme';
-import Button from '@/components/ui/Button';
 
 export const CardContainer = styled.div`
   height: 100%;
@@ -65,8 +64,4 @@ export const ActionContainer = styled.div`
     display: flex;
     gap: ${theme.spacing[2]};
   }
-`;
-
-export const LinkButton = styled(Button)`
-  text-decoration: none;
 `;

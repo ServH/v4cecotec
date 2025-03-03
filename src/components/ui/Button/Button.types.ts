@@ -1,7 +1,18 @@
-// src/components/ui/Button/Button.types.ts
-import { ButtonHTMLAttributes, ReactNode } from 'react';
+import { ButtonHTMLAttributes, ReactNode, AnchorHTMLAttributes } from 'react';
 
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+// Definimos un tipo que unifica las propiedades de botón y anchor
+export type PolymorphicComponentProps<
+  Element extends React.ElementType, 
+  Props = {}
+> = Props & Omit<
+  React.ComponentPropsWithRef<Element>,
+  keyof Props | 'as'
+> & {
+  as?: Element;
+};
+
+// Propiedades base del botón
+export interface ButtonBaseProps {
   /** Button label content */
   children: ReactNode;
   /** Button visual style */
@@ -18,8 +29,10 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   isLoading?: boolean;
   /** Disable button */
   disabled?: boolean;
-  /** Button type */
-  type?: 'button' | 'submit' | 'reset';
-  /** Click handler */
-  onClick?: () => void;
 }
+
+// Tipo final para el botón
+export type ButtonProps<Element extends React.ElementType = 'button'> = 
+  PolymorphicComponentProps<Element, ButtonBaseProps> & {
+    type?: 'button' | 'submit' | 'reset';
+  };

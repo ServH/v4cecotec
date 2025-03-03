@@ -5,8 +5,7 @@ import {
   CategoryName, 
   StatusBadge, 
   ActionContainer,
-  ErrorMessage,
-  LinkButton
+  ErrorMessage
 } from './CategoryCard.styles';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
@@ -51,7 +50,8 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
           
           <ActionContainer>
             <div>
-              <LinkButton 
+              <Button 
+                as="a"
                 href={`/api/proxy?category=${slug}`}
                 target="_blank" 
                 rel="noopener noreferrer"
@@ -73,9 +73,10 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
                   <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
                 </svg>
                 API
-              </LinkButton>
+              </Button>
               
-              <LinkButton 
+              <Button 
+                as="a"
                 href={`https://cecotec.es/es/${slug}`}
                 target="_blank" 
                 rel="noopener noreferrer"
@@ -98,7 +99,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
                   <line x1="10" y1="14" x2="21" y2="3"></line>
                 </svg>
                 Web
-              </LinkButton>
+              </Button>
             </div>
             
             <Button

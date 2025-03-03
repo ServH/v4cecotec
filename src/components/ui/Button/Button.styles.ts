@@ -1,7 +1,6 @@
-// src/components/ui/Button/Button.styles.ts
 import styled, { css, keyframes } from 'styled-components';
 import { theme } from '@/styles/theme';
-import { ButtonProps } from './Button.types';
+import { ButtonBaseProps } from './Button.types';
 
 const spin = keyframes`
   from {
@@ -124,7 +123,12 @@ const variantStyles = {
   `,
 };
 
-export const StyledButton = styled.button<ButtonProps>`
+// Usamos un objeto de tipo parcial que solo contiene las propiedades que necesitamos para los estilos
+type StyledButtonProps = ButtonBaseProps & {
+  fullWidth?: boolean;
+};
+
+export const StyledButton = styled.button<StyledButtonProps>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -134,6 +138,7 @@ export const StyledButton = styled.button<ButtonProps>`
   transition: ${theme.transitions.default};
   cursor: pointer;
   box-shadow: ${theme.shadows.sm};
+  text-decoration: none; /* Importante para enlaces */
   
   ${({ size = 'md' }) => sizeStyles[size]}
   ${({ variant = 'primary' }) => variantStyles[variant]}
