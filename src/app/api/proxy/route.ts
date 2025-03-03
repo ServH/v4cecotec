@@ -1,4 +1,3 @@
-// src/app/api/proxy/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 
@@ -18,9 +17,10 @@ export async function GET(request: NextRequest) {
     const response = await axios.get(
       `https://content.cecotec.es/api/v4/products/products-list-by-category/?category=${category}`,
       {
-        timeout: 15000, // Aumentamos el timeout a 15 segundos
+        timeout: 15000,
         headers: {
           'Accept': 'application/json',
+          'Accept-Language': 'es', // Añadido el parámetro de idioma español
           'Cache-Control': 'no-cache'
         }
       }
@@ -34,7 +34,14 @@ export async function GET(request: NextRequest) {
     );
     
     if (response.status === 200) {
-      return NextResponse.json(response.data);
+      // Devolvemos los datos con una caché más controlada
+      return new NextResponse(JSON.stringify(response.data), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'private, max-age=300' // Cache de 5 minutos para mejorar rendimiento
+        }
+      });
     } else {
       return NextResponse.json(
         { error: `Código de estado inesperado: ${response.status}` },
@@ -52,9 +59,26 @@ export async function GET(request: NextRequest) {
         );
       }
       
+      // Manejamos específicamente errores de red y 404
+      if (error.response) {
+        return NextResponse.json(
+          { 
+            error: `Error HTTP: ${error.response.status} - ${error.message}`, 
+            status: error.response.status 
+          },
+          { status: error.response.status }
+        );
+      } else if (error.request) {
+        // Error de red (sin respuesta)
+        return NextResponse.json(
+          { error: 'Error de red - No se pudo conectar al servidor', status: 503 },
+          { status: 503 }
+        );
+      }
+      
       return NextResponse.json(
-        { error: error.message, status: error.response?.status || 500 },
-        { status: error.response?.status || 500 }
+        { error: error.message, status: 500 },
+        { status: 500 }
       );
     }
     
