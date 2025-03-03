@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 
+// Simple in-memory cache with expiration
+const cache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const category = searchParams.get('category');
+  const forceRefresh = searchParams.has('_');
   
   if (!category) {
     return NextResponse.json(
@@ -12,66 +17,89 @@ export async function GET(request: NextRequest) {
     );
   }
   
+  // Check cache if not forcing refresh
+  if (!forceRefresh) {
+    const cachedData = cache.get(category);
+    const now = Date.now();
+    
+    if (cachedData && now - cachedData.timestamp < CACHE_TTL) {
+      console.log(`Using cached data for ${category}`);
+      return NextResponse.json(cachedData.data, {
+        headers: {
+          'Cache-Control': 'private, max-age=300',
+          'X-Cache': 'HIT'
+        }
+      });
+    }
+  }
+  
   try {
-    console.log(`Solicitando datos para la categoría: ${category}`);
+    console.log(`Requesting data for category: ${category}`);
     const response = await axios.get(
       `https://content.cecotec.es/api/v4/products/products-list-by-category/?category=${category}`,
       {
         timeout: 15000,
         headers: {
           'Accept': 'application/json',
-          'Accept-Language': 'es', // Añadido el parámetro de idioma español
+          'Accept-Language': 'es',
           'Cache-Control': 'no-cache'
         }
       }
     );
     
-    // Log para depuración
-    console.log(`Respuesta para ${category}: Status ${response.status}, Datos:`, 
+    // Log for debugging
+    console.log(`Response for ${category}: Status ${response.status}, Data:`, 
       response.data ? 
-        (Object.keys(response.data).length > 0 ? 'Tiene datos' : 'Objeto vacío') 
-        : 'Sin datos'
+        (Object.keys(response.data).length > 0 ? 'Has data' : 'Empty object') 
+        : 'No data'
     );
     
     if (response.status === 200) {
-      // Devolvemos los datos con una caché más controlada
+      // Update cache
+      cache.set(category, {
+        data: response.data,
+        timestamp: Date.now()
+      });
+      
+      // Return the data with controlled cache
       return new NextResponse(JSON.stringify(response.data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json',
-          'Cache-Control': 'private, max-age=300' // Cache de 5 minutos para mejorar rendimiento
+          'Cache-Control': 'private, max-age=300',
+          'X-Cache': 'MISS'
         }
       });
     } else {
       return NextResponse.json(
-        { error: `Código de estado inesperado: ${response.status}` },
+        { error: `Unexpected status code: ${response.status}` },
         { status: response.status }
       );
     }
   } catch (error) {
-    console.error(`Error al obtener datos para la categoría ${category}:`, error);
+    console.error(`Error fetching data for category ${category}:`, error);
     
     if (axios.isAxiosError(error)) {
       if (error.code === 'ECONNABORTED') {
         return NextResponse.json(
-          { error: 'Tiempo de espera agotado', status: 408 },
+          { error: 'Request timeout', status: 408 },
           { status: 408 }
         );
       }
       
-      // Manejamos específicamente errores de red y 404
+      // Handle specific network errors and 404s
       if (error.response) {
         return NextResponse.json(
           { 
-            error: `Error HTTP: ${error.response.status} - ${error.message}`, 
+            error: `HTTP Error: ${error.response.status} - ${error.message}`, 
             status: error.response.status 
           },
           { status: error.response.status }
         );
       } else if (error.request) {
-        // Error de red (sin respuesta)
+        // Network error (no response)
         return NextResponse.json(
-          { error: 'Error de red - No se pudo conectar al servidor', status: 503 },
+          { error: 'Network error - Could not connect to server', status: 503 },
           { status: 503 }
         );
       }
@@ -83,7 +111,7 @@ export async function GET(request: NextRequest) {
     }
     
     return NextResponse.json(
-      { error: 'Error al obtener datos de la categoría' },
+      { error: 'Error fetching category data' },
       { status: 500 }
     );
   }

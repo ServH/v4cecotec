@@ -1,9 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { CategoryStatsProps } from './CategoryStats.types';
 import { useCategoriesStore } from '@/stores/categories';
 import { getCategoryPath } from '@/services/api';
 import StatsCard from '@/components/common/StatsCard';
 import ProgressBar from '@/components/common/ProgressBar';
+import CategoryFilter from './components/CategoryFilter';
+import CategoryItem from './components/CategoryItem';
+import StatsHeader from './components/StatsHeader';
+import BatchSelector from './components/BatchSelector';
 import {
   Container,
   Header,
@@ -13,11 +17,6 @@ import {
   ProgressContainer,
   ProgressLabel,
   CategoryList,
-  CategoryItem,
-  CategoryName,
-  CategoryLink,
-  CategoryStatus,
-  CategoryError,
   ButtonContainer
 } from './CategoryStats.styles';
 
@@ -33,6 +32,7 @@ const CategoryStats: React.FC<CategoryStatsProps> = ({ slugs, categoriesTree }) 
     clearCache,
     analyzeIndividualCategory
   } = useCategoriesStore();
+  
   const [batchSize, setBatchSize] = useState(10);
   const [filter, setFilter] = useState<'all' | 'valid' | 'invalid'>('all');
   
@@ -40,32 +40,36 @@ const CategoryStats: React.FC<CategoryStatsProps> = ({ slugs, categoriesTree }) 
     resetStats();
   }, [resetStats]);
   
-  const handleStartAnalysis = () => {
+  const handleStartAnalysis = useCallback(() => {
     const limitedSlugs = slugs.slice(0, batchSize);
     fetchCategories(limitedSlugs);
-  };
+  }, [batchSize, fetchCategories, slugs]);
 
-  const handleClearCacheAndAnalyze = () => {
+  const handleClearCacheAndAnalyze = useCallback(() => {
     clearCache();
     if (stats.processed > 0) {
       const limitedSlugs = Object.keys(stats.categories).slice(0, batchSize);
       fetchCategories(limitedSlugs);
     }
-  };
+  }, [batchSize, clearCache, fetchCategories, stats.categories, stats.processed]);
   
-  const handleRetryCategory = (slug: string) => {
+  const handleRetryCategory = useCallback((slug: string) => {
     analyzeIndividualCategory(slug);
-  };
+  }, [analyzeIndividualCategory]);
   
-  const progress = stats.total > 0 ? (stats.processed / stats.total) * 100 : 0;
+  const progress = useMemo(() => 
+    stats.total > 0 ? (stats.processed / stats.total) * 100 : 0,
+  [stats.processed, stats.total]);
   
-  // Filtrar categorías según la selección
-  const filteredCategories = Object.entries(stats.categories).filter(([_, data]) => {
-    if (filter === 'all') return true;
-    if (filter === 'valid') return data.status === 'OK';
-    if (filter === 'invalid') return data.status === 'KO';
-    return true;
-  });
+  // Filter categories based on selection
+  const filteredCategories = useMemo(() => 
+    Object.entries(stats.categories).filter(([_, data]) => {
+      if (filter === 'all') return true;
+      if (filter === 'valid') return data.status === 'OK';
+      if (filter === 'invalid') return data.status === 'KO';
+      return true;
+    }),
+  [filter, stats.categories]);
   
   return (
     <Container>
@@ -77,27 +81,12 @@ const CategoryStats: React.FC<CategoryStatsProps> = ({ slugs, categoriesTree }) 
       </Header>
       
       <ButtonContainer>
-        <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
-          <div>
-            <label htmlFor="batchSize" style={{ marginRight: '8px' }}>
-              Número de categorías a analizar:
-            </label>
-            <select 
-              id="batchSize"
-              value={batchSize}
-              onChange={(e) => setBatchSize(Number(e.target.value))}
-              disabled={loading}
-              style={{ padding: '4px 8px' }}
-            >
-              <option value="5">5 categorías</option>
-              <option value="10">10 categorías</option>
-              <option value="20">20 categorías</option>
-              <option value="50">50 categorías</option>
-              <option value="100">100 categorías</option>
-              <option value={slugs.length}>Todas ({slugs.length} categorías)</option>
-            </select>
-          </div>
-        </div>
+        <BatchSelector 
+          batchSize={batchSize} 
+          setBatchSize={setBatchSize} 
+          disabled={loading} 
+          totalSlugs={slugs.length}
+        />
         
         <div style={{ display: 'flex', gap: '12px' }}>
           <button 
@@ -167,110 +156,24 @@ const CategoryStats: React.FC<CategoryStatsProps> = ({ slugs, categoriesTree }) 
           
           {stats.processed > 0 && (
             <>
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center',
-                margin: '24px 0 16px' 
-              }}>
-                <h2>Resultados:</h2>
-                <div>
-                  <label htmlFor="filter" style={{ marginRight: '8px' }}>
-                    Filtrar:
-                  </label>
-                  <select 
-                    id="filter"
-                    value={filter}
-                    onChange={(e) => setFilter(e.target.value as 'all' | 'valid' | 'invalid')}
-                    style={{ padding: '4px 8px' }}
-                  >
-                    <option value="all">Todas</option>
-                    <option value="valid">Con Productos</option>
-                    <option value="invalid">Sin Productos</option>
-                  </select>
-                </div>
-              </div>
-              
-              <div style={{ margin: '12px 0', fontSize: '14px', color: '#5f6368' }}>
-                Mostrando {filteredCategories.length} de {Object.keys(stats.categories).length} categorías
-              </div>
+              <StatsHeader 
+                filter={filter} 
+                setFilter={setFilter} 
+                totalItems={Object.keys(stats.categories).length}
+                filteredItems={filteredCategories.length}
+              />
               
               <CategoryList>
-                {filteredCategories.map(([slug, data]) => {
-                  // Obtener la ruta de la categoría
-                  const categoryPath = getCategoryPath(categoriesTree, slug);
-                  
-                  return (
-                    <CategoryItem key={slug} status={data.status}>
-                      <div style={{ 
-                        fontSize: '12px', 
-                        color: '#5f6368', 
-                        marginBottom: '4px',
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        gap: '4px'
-                      }}>
-                        {categoryPath.map((segment, index) => (
-                          <React.Fragment key={index}>
-                            {index > 0 && <span style={{ margin: '0 2px' }}>&gt;</span>}
-                            <span>{segment}</span>
-                          </React.Fragment>
-                        ))}
-                      </div>
-                      <CategoryName>
-                        {slug}
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <button
-                            onClick={() => handleRetryCategory(slug)}
-                            disabled={analyzing}
-                            style={{ 
-                              padding: '2px 6px', 
-                              fontSize: '12px',
-                              background: '#f1f3f4',
-                              color: '#202124',
-                              border: 'none',
-                              borderRadius: '4px',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            Reanalizar
-                          </button>
-                          <CategoryLink 
-                            href={`https://cecotec.es/es/${slug}`} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                          >
-                            Ver en web
-                          </CategoryLink>
-                        </div>
-                      </CategoryName>
-                      <CategoryStatus status={data.status}>
-                        {data.status === 'OK' ? 'Con Productos' : 'Sin Productos'}
-                      </CategoryStatus>
-                      {data.error && (
-                        <CategoryError>{data.error}</CategoryError>
-                      )}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px' }}>
-                        <CategoryLink 
-                          href={`/api/proxy?category=${slug}`}
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          style={{ fontSize: '12px' }}
-                        >
-                          Ver API
-                        </CategoryLink>
-                        <CategoryLink 
-                          href={`https://content.cecotec.es/api/v4/products/products-list-by-category/?category=${slug}`}
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          style={{ fontSize: '12px' }}
-                        >
-                          API Original
-                        </CategoryLink>
-                      </div>
-                    </CategoryItem>
-                  );
-                })}
+                {filteredCategories.map(([slug, data]) => (
+                  <CategoryItem
+                    key={slug}
+                    slug={slug}
+                    data={data}
+                    categoryPath={getCategoryPath(categoriesTree, slug)}
+                    onRetry={handleRetryCategory}
+                    disabled={analyzing}
+                  />
+                ))}
               </CategoryList>
             </>
           )}
