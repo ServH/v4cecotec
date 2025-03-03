@@ -1,7 +1,6 @@
 import React from 'react';
 import { 
   ControlsContainer, 
-  ControlsCard,
   SelectContainer,
   ButtonContainer
 } from './AnalysisControls.styles';
@@ -9,6 +8,8 @@ import Card from '@/components/ui/Card';
 import Select from '@/components/ui/Select';
 import Button from '@/components/ui/Button';
 import Flex from '@/components/layout/Flex';
+import AdvancedOptions from '@/components/app/AdvancedOptions';
+import { Category } from '@/types/category.types';
 
 interface AnalysisControlsProps {
   totalSlugs: number;
@@ -18,6 +19,11 @@ interface AnalysisControlsProps {
   onClearCacheAndRestart: () => void;
   loading: boolean;
   analyzing: boolean;
+  categoriesTree: Category[];
+  selectedCategory: string;
+  setSelectedCategory: (category: string) => void;
+  sortOrder: 'alphabetical' | 'reverse-alphabetical';
+  setSortOrder: (order: 'alphabetical' | 'reverse-alphabetical') => void;
 }
 
 export const AnalysisControls: React.FC<AnalysisControlsProps> = ({
@@ -27,7 +33,12 @@ export const AnalysisControls: React.FC<AnalysisControlsProps> = ({
   onStartAnalysis,
   onClearCacheAndRestart,
   loading,
-  analyzing
+  analyzing,
+  categoriesTree,
+  selectedCategory,
+  setSelectedCategory,
+  sortOrder,
+  setSortOrder
 }) => {
   return (
     <ControlsContainer>
@@ -104,6 +115,15 @@ export const AnalysisControls: React.FC<AnalysisControlsProps> = ({
               </Button>
             </ButtonContainer>
           </Flex>
+          
+          <AdvancedOptions
+            categoriesTree={categoriesTree}
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
+            sortOrder={sortOrder}
+            setSortOrder={setSortOrder}
+            disabled={loading || analyzing}
+          />
         </Card.Body>
       </Card>
     </ControlsContainer>

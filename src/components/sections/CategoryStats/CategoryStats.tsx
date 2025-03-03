@@ -1,4 +1,3 @@
-// src/components/sections/CategoryStats/CategoryStats.tsx
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useCategoriesStore } from '@/stores/categories';
 import { getCategoryPath } from '@/services/api';
@@ -11,6 +10,7 @@ import AnalysisControls from '@/components/app/AnalysisControls';
 import CategoryFilter from '@/components/app/CategoryFilter';
 import CategoryCard from '@/components/app/CategoryCard';
 import LoadingState from '@/components/app/LoadingState';
+import ErrorState from '@/components/app/ErrorState';
 import { AlertContainer, AlertBox, AnalyzingAlert, MainContent } from './CategoryStats.styles';
 
 const CategoryStats: React.FC<CategoryStatsProps> = ({ slugs, categoriesTree }) => {
@@ -28,15 +28,41 @@ const CategoryStats: React.FC<CategoryStatsProps> = ({ slugs, categoriesTree }) 
   
   const [batchSize, setBatchSize] = useState(10);
   const [filter, setFilter] = useState<'all' | 'valid' | 'invalid'>('all');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [sortOrder, setSortOrder] = useState<'alphabetical' | 'reverse-alphabetical'>('alphabetical');
   
   useEffect(() => {
     resetStats();
   }, [resetStats]);
   
+  // Filtrar y ordenar slugs según las opciones avanzadas
+  const filteredAndSortedSlugs = useMemo(() => {
+    let result = [...slugs];
+    
+    // Filtrar por categoría principal si está seleccionada
+    if (selectedCategory) {
+      const selectedCat = categoriesTree.find(cat => cat.slug === selectedCategory);
+      if (selectedCat) {
+        // Obtenemos los slugs de las subcategorías
+        const childSlugs = getCategoryChildrenSlugs(selectedCat);
+        result = result.filter(slug => childSlugs.includes(slug));
+      }
+    }
+    
+    // Ordenar según la preferencia
+    if (sortOrder === 'alphabetical') {
+      result.sort((a, b) => a.localeCompare(b));
+    } else {
+      result.sort((a, b) => b.localeCompare(a));
+    }
+    
+    return result;
+  }, [slugs, selectedCategory, sortOrder, categoriesTree]);
+  
   const handleStartAnalysis = useCallback(() => {
-    const limitedSlugs = slugs.slice(0, batchSize);
+    const limitedSlugs = filteredAndSortedSlugs.slice(0, batchSize);
     fetchCategories(limitedSlugs);
-  }, [batchSize, fetchCategories, slugs]);
+  }, [batchSize, fetchCategories, filteredAndSortedSlugs]);
 
   const handleClearCacheAndAnalyze = useCallback(() => {
     clearCache();
@@ -64,7 +90,7 @@ const CategoryStats: React.FC<CategoryStatsProps> = ({ slugs, categoriesTree }) 
     }),
   [filter, stats.categories]);
   
-  // If no categories have been processed yet, show initial state
+  // Si no categories have been processed yet, show initial state
   const showInitialState = stats.processed === 0 && !loading;
   
   if (showInitialState) {
@@ -74,13 +100,18 @@ const CategoryStats: React.FC<CategoryStatsProps> = ({ slugs, categoriesTree }) 
         <Container>
           <MainContent>
             <AnalysisControls 
-              totalSlugs={slugs.length}
+              totalSlugs={filteredAndSortedSlugs.length}
               batchSize={batchSize}
               setBatchSize={setBatchSize}
               onStartAnalysis={handleStartAnalysis}
               onClearCacheAndRestart={handleClearCacheAndAnalyze}
               loading={loading}
               analyzing={analyzing}
+              categoriesTree={categoriesTree}
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
+              sortOrder={sortOrder}
+              setSortOrder={setSortOrder}
             />
           </MainContent>
         </Container>
@@ -145,13 +176,18 @@ const CategoryStats: React.FC<CategoryStatsProps> = ({ slugs, categoriesTree }) 
           
           {/* Analysis Controls */}
           <AnalysisControls 
-            totalSlugs={slugs.length}
+            totalSlugs={filteredAndSortedSlugs.length}
             batchSize={batchSize}
             setBatchSize={setBatchSize}
             onStartAnalysis={handleStartAnalysis}
             onClearCacheAndRestart={handleClearCacheAndAnalyze}
             loading={loading}
             analyzing={analyzing}
+            categoriesTree={categoriesTree}
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
+            sortOrder={sortOrder}
+            setSortOrder={setSortOrder}
           />
           
           {/* Stats Overview */}
@@ -198,6 +234,19 @@ const CategoryStats: React.FC<CategoryStatsProps> = ({ slugs, categoriesTree }) 
       </Container>
     </>
   );
+};
+
+// Función auxiliar para obtener todos los slugs de una categoría y sus hijos
+const getCategoryChildrenSlugs = (category: { slug: string, children?: any[] }): string[] => {
+  const slugs: string[] = [category.slug];
+  
+  if (category.children && category.children.length > 0) {
+    category.children.forEach(child => {
+      slugs.push(...getCategoryChildrenSlugs(child));
+    });
+  }
+  
+  return slugs;
 };
 
 export default CategoryStats;
