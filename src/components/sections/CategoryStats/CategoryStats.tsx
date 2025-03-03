@@ -5,15 +5,13 @@ import { getCategoryPath } from '@/services/api';
 import { CategoryStatsProps } from './CategoryStats.types';
 import Container from '@/components/layout/Container';
 import Grid from '@/components/layout/Grid';
-import Card from '@/components/ui/Card';
 import Header from '@/components/app/Header';
 import StatsOverview from '@/components/app/StatsOverview';
 import AnalysisControls from '@/components/app/AnalysisControls';
 import CategoryFilter from '@/components/app/CategoryFilter';
 import CategoryCard from '@/components/app/CategoryCard';
 import LoadingState from '@/components/app/LoadingState';
-import ErrorState from '@/components/app/ErrorState';
-import { AlertContainer, AlertBox, AnalyzingAlert, MainContent, SectionTitle } from './CategoryStats.styles';
+import { AlertContainer, AlertBox, AnalyzingAlert, MainContent } from './CategoryStats.styles';
 
 const CategoryStats: React.FC<CategoryStatsProps> = ({ slugs, categoriesTree }) => {
   const { 
@@ -75,7 +73,6 @@ const CategoryStats: React.FC<CategoryStatsProps> = ({ slugs, categoriesTree }) 
         <Header />
         <Container>
           <MainContent>
-            <SectionTitle>Análisis de Categorías</SectionTitle>
             <AnalysisControls 
               totalSlugs={slugs.length}
               batchSize={batchSize}
@@ -85,15 +82,6 @@ const CategoryStats: React.FC<CategoryStatsProps> = ({ slugs, categoriesTree }) 
               loading={loading}
               analyzing={analyzing}
             />
-            
-            <Card>
-              <Card.Body>
-                <p>
-                  Selecciona el número de categorías a analizar y haz clic en "Iniciar Análisis" para comenzar.
-                  La herramienta verificará la disponibilidad de productos en {slugs.length} categorías sin subcategorías.
-                </p>
-              </Card.Body>
-            </Card>
           </MainContent>
         </Container>
       </>
@@ -154,8 +142,6 @@ const CategoryStats: React.FC<CategoryStatsProps> = ({ slugs, categoriesTree }) 
               </AlertBox>
             </AlertContainer>
           )}
-          
-          <SectionTitle>Análisis de Categorías</SectionTitle>
           
           {/* Analysis Controls */}
           <AnalysisControls 

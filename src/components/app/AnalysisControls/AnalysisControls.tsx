@@ -34,16 +34,12 @@ export const AnalysisControls: React.FC<AnalysisControlsProps> = ({
       <Card>
         <Card.Header>
           <Card.Title>Configuración del Análisis</Card.Title>
-          <Card.Description>
-            Selecciona el número de categorías a analizar y comienza el proceso.
-          </Card.Description>
         </Card.Header>
         
         <Card.Body>
-          <Flex direction="column" gap={4}>
+          <Flex direction="row" align="center" gap={4} wrap="wrap">
             <SelectContainer>
               <Select
-                label="Número de categorías a analizar"
                 value={batchSize.toString()}
                 onChange={(e) => setBatchSize(Number(e.target.value))}
                 disabled={loading || analyzing}
@@ -53,8 +49,9 @@ export const AnalysisControls: React.FC<AnalysisControlsProps> = ({
                   { value: '20', label: '20 categorías' },
                   { value: '50', label: '50 categorías' },
                   { value: '100', label: '100 categorías' },
-                  { value: totalSlugs.toString(), label: `Todas (${totalSlugs} categorías)` }
+                  { value: totalSlugs.toString(), label: `Todas (${totalSlugs})` }
                 ]}
+                size="md"
               />
             </SelectContainer>
             

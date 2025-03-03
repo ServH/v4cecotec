@@ -7,7 +7,7 @@ export const SelectContainer = styled.div<{ fullWidth?: boolean }>`
   display: flex;
   flex-direction: column;
   width: ${({ fullWidth }) => (fullWidth ? '100%' : 'auto')};
-  margin-bottom: ${theme.spacing[4]};
+  margin-bottom: 0; // Eliminado margen inferior
 `;
 
 export const SelectLabel = styled.label<{ required: boolean; disabled: boolean }>`

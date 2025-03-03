@@ -1,17 +1,9 @@
-// src/components/sections/CategoryStats/CategoryStats.styles.ts
 import styled from 'styled-components';
 import { theme } from '@/styles/theme';
 import Card from '@/components/ui/Card';
 
 export const MainContent = styled.main`
   padding: ${theme.spacing[6]} 0;
-`;
-
-export const SectionTitle = styled.h1`
-  font-size: ${theme.typography.fontSizes['3xl']};
-  font-weight: ${theme.typography.fontWeights.bold};
-  margin-bottom: ${theme.spacing[6]};
-  color: ${theme.colors.text.primary};
 `;
 
 export const AlertContainer = styled.div`
