@@ -4,7 +4,6 @@ import { getCategoryPath } from '@/services/api';
 import { CategoryStatsProps } from './CategoryStats.types';
 import Container from '@/components/layout/Container';
 import Grid from '@/components/layout/Grid';
-import Header from '@/components/app/Header';
 import StatsOverview from '@/components/app/StatsOverview';
 import AnalysisControls from '@/components/app/AnalysisControls';
 import CategoryFilter from '@/components/app/CategoryFilter';
@@ -95,86 +94,8 @@ const CategoryStats: React.FC<CategoryStatsProps> = ({ slugs, categoriesTree }) 
   
   if (showInitialState) {
     return (
-      <>
-        <Header />
-        <Container>
-          <MainContent>
-            <AnalysisControls 
-              totalSlugs={filteredAndSortedSlugs.length}
-              batchSize={batchSize}
-              setBatchSize={setBatchSize}
-              onStartAnalysis={handleStartAnalysis}
-              onClearCacheAndRestart={handleClearCacheAndAnalyze}
-              loading={loading}
-              analyzing={analyzing}
-              categoriesTree={categoriesTree}
-              selectedCategory={selectedCategory}
-              setSelectedCategory={setSelectedCategory}
-              sortOrder={sortOrder}
-              setSortOrder={setSortOrder}
-            />
-          </MainContent>
-        </Container>
-      </>
-    );
-  }
-  
-  return (
-    <>
-      <Header />
       <Container>
         <MainContent>
-          {/* Error Alert */}
-          {error && (
-            <AlertContainer>
-              <AlertBox variant="error">
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                  width="20"
-                  height="20"
-                >
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="12" y1="8" x2="12" y2="12"></line>
-                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                </svg>
-                <strong>Error:</strong> {error}
-              </AlertBox>
-            </AlertContainer>
-          )}
-
-          {/* Analyzing Alert */}
-          {analyzing && (
-            <AlertContainer>
-              <AlertBox variant="info">
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                  width="20"
-                  height="20"
-                >
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="12" y1="16" x2="12" y2="12"></line>
-                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                </svg>
-                <AnalyzingAlert>
-                  <strong>Analizando categoría:</strong> {currentCategory}
-                </AnalyzingAlert>
-              </AlertBox>
-            </AlertContainer>
-          )}
-          
-          {/* Analysis Controls */}
           <AnalysisControls 
             totalSlugs={filteredAndSortedSlugs.length}
             batchSize={batchSize}
@@ -189,50 +110,122 @@ const CategoryStats: React.FC<CategoryStatsProps> = ({ slugs, categoriesTree }) 
             sortOrder={sortOrder}
             setSortOrder={setSortOrder}
           />
-          
-          {/* Stats Overview */}
-          {(stats.processed > 0 || loading) && (
-            <StatsOverview 
-              total={stats.total}
-              valid={stats.valid}
-              invalid={stats.invalid}
-              processed={stats.processed}
-              progress={progress}
-            />
-          )}
-          
-          {/* Category Filter */}
-          {stats.processed > 0 && (
-            <CategoryFilter 
-              filter={filter}
-              setFilter={setFilter}
-              totalItems={Object.keys(stats.categories).length}
-              filteredItems={filteredCategories.length}
-            />
-          )}
-          
-          {/* Category Grid */}
-          {stats.processed > 0 && (
-            <Grid 
-              columns={{ base: 1, md: 2, lg: 3 }}
-              gap={6}
-            >
-              {filteredCategories.map(([slug, data]) => (
-                <CategoryCard 
-                  key={slug}
-                  slug={slug}
-                  categoryPath={getCategoryPath(categoriesTree, slug)}
-                  status={data.status}
-                  error={data.error}
-                  onRetry={handleRetryCategory}
-                  disabled={analyzing}
-                />
-              ))}
-            </Grid>
-          )}
         </MainContent>
       </Container>
-    </>
+    );
+  }
+  
+  return (
+    <Container>
+      <MainContent>
+        {/* Error Alert */}
+        {error && (
+          <AlertContainer>
+            <AlertBox variant="error">
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+                width="20"
+                height="20"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <strong>Error:</strong> {error}
+            </AlertBox>
+          </AlertContainer>
+        )}
+
+        {/* Analyzing Alert */}
+        {analyzing && (
+          <AlertContainer>
+            <AlertBox variant="info">
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+                width="20"
+                height="20"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              <AnalyzingAlert>
+                <strong>Analizando categoría:</strong> {currentCategory}
+              </AnalyzingAlert>
+            </AlertBox>
+          </AlertContainer>
+        )}
+        
+        {/* Analysis Controls */}
+        <AnalysisControls 
+          totalSlugs={filteredAndSortedSlugs.length}
+          batchSize={batchSize}
+          setBatchSize={setBatchSize}
+          onStartAnalysis={handleStartAnalysis}
+          onClearCacheAndRestart={handleClearCacheAndAnalyze}
+          loading={loading}
+          analyzing={analyzing}
+          categoriesTree={categoriesTree}
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+          sortOrder={sortOrder}
+          setSortOrder={setSortOrder}
+        />
+        
+        {/* Stats Overview */}
+        {(stats.processed > 0 || loading) && (
+          <StatsOverview 
+            total={stats.total}
+            valid={stats.valid}
+            invalid={stats.invalid}
+            processed={stats.processed}
+            progress={progress}
+          />
+        )}
+        
+        {/* Category Filter */}
+        {stats.processed > 0 && (
+          <CategoryFilter 
+            filter={filter}
+            setFilter={setFilter}
+            totalItems={Object.keys(stats.categories).length}
+            filteredItems={filteredCategories.length}
+          />
+        )}
+        
+        {/* Category Grid */}
+        {stats.processed > 0 && (
+          <Grid 
+            columns={{ base: 1, md: 2, lg: 3 }}
+            gap={6}
+          >
+            {filteredCategories.map(([slug, data]) => (
+              <CategoryCard 
+                key={slug}
+                slug={slug}
+                categoryPath={getCategoryPath(categoriesTree, slug)}
+                status={data.status}
+                error={data.error}
+                onRetry={handleRetryCategory}
+                disabled={analyzing}
+              />
+            ))}
+          </Grid>
+        )}
+      </MainContent>
+    </Container>
   );
 };
 

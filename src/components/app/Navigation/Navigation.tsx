@@ -18,8 +18,8 @@ export const Navigation: React.FC = () => {
         <NavigationList>
           <NavigationItem>
             <NavigationLink 
-              href="/"
-              className={pathname === '/' ? 'active' : ''}
+              href="/categories"
+              className={pathname === '/categories' ? 'active' : ''}
             >
               <NavigationIcon>
                 <svg 
