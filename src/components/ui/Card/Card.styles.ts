@@ -56,18 +56,18 @@ const cardElevations = {
   `,
 };
 
-export const StyledCard = styled.div<CardProps>`
+export const StyledCard = styled.div<{ $variant?: string; $elevation?: string; $bordered?: boolean }>`
   border-radius: ${theme.radii.lg};
   overflow: hidden;
-  ${({ variant = 'default' }) => cardVariants[variant]};
-  ${({ elevation = 'md' }) => cardElevations[elevation]};
-  ${({ bordered }) => bordered && css`
+  ${({ $variant = 'default' }) => cardVariants[$variant]};
+  ${({ $elevation = 'md' }) => cardElevations[$elevation]};
+  ${({ $bordered }) => $bordered && css`
     border: 1px solid ${theme.colors.divider};
   `}
   transition: ${theme.transitions.default};
   
   &:hover {
-    ${({ elevation }) => elevation !== 'none' && css`
+    ${({ $elevation }) => $elevation !== 'none' && css`
       box-shadow: ${theme.shadows.lg};
     `}
   }

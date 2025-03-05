@@ -19,9 +19,9 @@ export const Card: React.FC<CardProps> = ({
 }) => {
   return (
     <StyledCard 
-      variant={variant}
-      elevation={elevation}
-      bordered={bordered}
+      $variant={variant}
+      $elevation={elevation}
+      $bordered={bordered}
       className={className}
       {...rest}
     >

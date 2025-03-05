@@ -14,11 +14,11 @@ export const Flex: React.FC<FlexProps> = ({
 }) => {
   return (
     <StyledFlex
-      direction={direction}
-      align={align}
-      justify={justify}
-      wrap={wrap}
-      gap={gap}
+      $direction={direction}
+      $align={align}
+      $justify={justify}
+      $wrap={wrap}
+      $gap={gap}
       className={className}
       {...rest}
     >

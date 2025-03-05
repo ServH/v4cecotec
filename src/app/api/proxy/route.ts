@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     const response = await axios.get(
       `https://content.cecotec.es/api/v4/products/products-list-by-category/?category=${category}`,
       {
-        timeout: 15000,
+        timeout: 30000, // Aumentado a 30 segundos
         headers: {
           'Accept': 'application/json',
           'Accept-Language': 'es',

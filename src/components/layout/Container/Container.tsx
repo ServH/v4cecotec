@@ -11,8 +11,8 @@ export const Container: React.FC<ContainerProps> = ({
 }) => {
   return (
     <StyledContainer 
-      maxWidth={maxWidth}
-      padding={padding}
+      $maxWidth={maxWidth}
+      $padding={padding}
       className={className}
       {...rest}
     >
