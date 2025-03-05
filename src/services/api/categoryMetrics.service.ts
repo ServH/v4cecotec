@@ -109,7 +109,9 @@ export const fetchCategoryMetrics = async (slug: string): Promise<CategoryMetric
           (detail.inStock === true) ||
           (typeof detail.stock === 'number' && detail.stock > 0) ||
           (detail.availability === 'in_stock') ||
-          (detail.stockStatus === 'instock')
+          (detail.stockStatus === 'instock') ||
+          // Añadir la nueva comprobación para isInStock
+          (detail.pricing && detail.pricing.isInStock === 1)
         ) {
           detailedProductsInStock++;
         }
