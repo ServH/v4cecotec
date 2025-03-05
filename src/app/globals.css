@@ -49,3 +49,40 @@ button:disabled {
   background-color: #9aa0a6;
   cursor: not-allowed;
 }
+/* Estilos para el modo de arrastre */
+.dragging-active {
+  cursor: grabbing !important;
+  user-select: none;
+}
+
+.dragging-active * {
+  cursor: grabbing !important;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+/* Estilos para el modo de arrastre */
+.dragging-active {
+  cursor: grabbing !important;
+  user-select: none;
+}
+
+.dragging-active * {
+  cursor: grabbing !important;
+}
+/* Estilos para el modo de arrastre */
+.dragging-active {
+  cursor: grabbing !important;
+  user-select: none;
+}
+
+.dragging-active * {
+  cursor: grabbing !important;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

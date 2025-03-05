@@ -1,3 +1,4 @@
+// src/components/ui/Input/Input.styles.ts
 import styled, { css } from 'styled-components';
 import { theme } from '@/styles/theme';
 import { InputProps, InputWrapperProps } from './Input.types';
@@ -40,47 +41,39 @@ const inputSizeStyles = {
   `,
 };
 
-// Input variant styles
+// Input variant styles (definidas como css directamente, no como funciones)
 const inputVariantStyles = {
   outline: css<{ hasError: boolean }>`
-    border: 1px solid ${({ hasError }) => 
-      hasError ? theme.colors.error.main : theme.colors.neutral[300]};
+    border: 1px solid ${props => props.hasError ? theme.colors.error.main : theme.colors.neutral[300]};
     border-radius: ${theme.radii.md};
     background-color: ${theme.colors.background.default};
     
     &:focus-within {
-      border-color: ${({ hasError }) => 
-        hasError ? theme.colors.error.main : theme.colors.primary[500]};
-      box-shadow: 0 0 0 1px ${({ hasError }) => 
-        hasError ? theme.colors.error.main : theme.colors.primary[500]};
+      border-color: ${props => props.hasError ? theme.colors.error.main : theme.colors.primary[500]};
+      box-shadow: 0 0 0 1px ${props => props.hasError ? theme.colors.error.main : theme.colors.primary[500]};
     }
   `,
   filled: css<{ hasError: boolean }>`
     border: 1px solid transparent;
-    border-bottom: 1px solid ${({ hasError }) => 
-      hasError ? theme.colors.error.main : theme.colors.neutral[300]};
+    border-bottom: 1px solid ${props => props.hasError ? theme.colors.error.main : theme.colors.neutral[300]};
     border-radius: ${theme.radii.md} ${theme.radii.md} 0 0;
     background-color: ${theme.colors.neutral[100]};
     
     &:focus-within {
       background-color: ${theme.colors.neutral[50]};
-      border-bottom-color: ${({ hasError }) => 
-        hasError ? theme.colors.error.main : theme.colors.primary[500]};
+      border-bottom-color: ${props => props.hasError ? theme.colors.error.main : theme.colors.primary[500]};
     }
   `,
   flushed: css<{ hasError: boolean }>`
     border: none;
-    border-bottom: 1px solid ${({ hasError }) => 
-      hasError ? theme.colors.error.main : theme.colors.neutral[300]};
+    border-bottom: 1px solid ${props => props.hasError ? theme.colors.error.main : theme.colors.neutral[300]};
     border-radius: 0;
     padding-left: 0;
     padding-right: 0;
     
     &:focus-within {
-      border-bottom-color: ${({ hasError }) => 
-        hasError ? theme.colors.error.main : theme.colors.primary[500]};
-      box-shadow: 0 1px 0 0 ${({ hasError }) => 
-        hasError ? theme.colors.error.main : theme.colors.primary[500]};
+      border-bottom-color: ${props => props.hasError ? theme.colors.error.main : theme.colors.primary[500]};
+      box-shadow: 0 1px 0 0 ${props => props.hasError ? theme.colors.error.main : theme.colors.primary[500]};
     }
   `,
 };
@@ -93,7 +86,18 @@ export const InputWrapper = styled.div<InputWrapperProps>`
   transition: ${theme.transitions.default};
   
   ${({ size = 'md' }) => inputSizeStyles[size]}
-  ${({ variant = 'outline', hasError }) => inputVariantStyles[variant]({ hasError })}
+  
+  /* Aplicar los estilos de variante usando una operación condicional */
+  ${({ variant = 'outline', hasError }) => {
+    switch (variant) {
+      case 'filled':
+        return css`${inputVariantStyles.filled}`;
+      case 'flushed':
+        return css`${inputVariantStyles.flushed}`;
+      default:
+        return css`${inputVariantStyles.outline}`;
+    }
+  }}
   
   ${({ disabled }) => disabled && css`
     opacity: 0.6;

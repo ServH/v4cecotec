@@ -15,21 +15,22 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
   layout,
   isOrderingMode,
   customOrder = {},
-  onProductDragStart,
-  onProductDragOver,
-  onProductDrop,
   loading = false
 }) => {
   // Ordenar productos según customOrder o posición original
   const sortedProducts = useMemo(() => {
+    if (!isOrderingMode || Object.keys(customOrder).length === 0) {
+      return products;
+    }
+    
     const productsCopy = [...products];
     
     return productsCopy.sort((a, b) => {
-      const posA = customOrder[a.id] !== undefined ? customOrder[a.id] : a.position || 0;
-      const posB = customOrder[b.id] !== undefined ? customOrder[b.id] : b.position || 0;
+      const posA = customOrder[a.id] !== undefined ? Number(customOrder[a.id]) : (Number(a.position) || 0);
+      const posB = customOrder[b.id] !== undefined ? Number(customOrder[b.id]) : (Number(b.position) || 0);
       return posA - posB;
     });
-  }, [products, customOrder]);
+  }, [products, customOrder, isOrderingMode]);
 
   if (loading) {
     return (
@@ -84,7 +85,7 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
             <path d="M12 19V5"></path>
             <path d="m5 12 7-7 7 7"></path>
           </svg>
-          Modo ordenación activo. Arrastra y suelta los productos para organizarlos.
+          Los productos se muestran en el orden personalizado. Para cambiar el orden, usa el botón "Activar ordenación".
         </OrderingModeMessage>
       )}
       
@@ -94,10 +95,7 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
             key={product.id}
             product={product}
             layout={layout}
-            isDraggable={isOrderingMode}
-            onDragStart={onProductDragStart}
-            onDragOver={onProductDragOver}
-            onDrop={onProductDrop}
+            isDraggable={false}
           />
         ))}
       </ProductsGrid>

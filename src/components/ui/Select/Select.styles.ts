@@ -41,39 +41,47 @@ const selectSizeStyles = {
   `,
 };
 
-// Select variant styles - convertidos a funciones
+// Select variant styles - definidos como objetos con funciones
 const selectVariantStyles = {
-  outline: (props: { hasError: boolean }) => css`
-    border: 1px solid ${props.hasError ? theme.colors.error.main : theme.colors.neutral[300]};
+  outline: css<{ $hasError: boolean }>`
+    border: 1px solid ${({ $hasError }) => 
+      $hasError ? theme.colors.error.main : theme.colors.neutral[300]};
     border-radius: ${theme.radii.md};
     background-color: ${theme.colors.background.default};
     
     &:focus-within {
-      border-color: ${props.hasError ? theme.colors.error.main : theme.colors.primary[500]};
-      box-shadow: 0 0 0 1px ${props.hasError ? theme.colors.error.main : theme.colors.primary[500]};
+      border-color: ${({ $hasError }) => 
+        $hasError ? theme.colors.error.main : theme.colors.primary[500]};
+      box-shadow: 0 0 0 1px ${({ $hasError }) => 
+        $hasError ? theme.colors.error.main : theme.colors.primary[500]};
     }
   `,
-  filled: (props: { hasError: boolean }) => css`
+  filled: css<{ $hasError: boolean }>`
     border: 1px solid transparent;
-    border-bottom: 1px solid ${props.hasError ? theme.colors.error.main : theme.colors.neutral[300]};
+    border-bottom: 1px solid ${({ $hasError }) => 
+      $hasError ? theme.colors.error.main : theme.colors.neutral[300]};
     border-radius: ${theme.radii.md} ${theme.radii.md} 0 0;
     background-color: ${theme.colors.neutral[100]};
     
     &:focus-within {
       background-color: ${theme.colors.neutral[50]};
-      border-bottom-color: ${props.hasError ? theme.colors.error.main : theme.colors.primary[500]};
+      border-bottom-color: ${({ $hasError }) => 
+        $hasError ? theme.colors.error.main : theme.colors.primary[500]};
     }
   `,
-  flushed: (props: { hasError: boolean }) => css`
+  flushed: css<{ $hasError: boolean }>`
     border: none;
-    border-bottom: 1px solid ${props.hasError ? theme.colors.error.main : theme.colors.neutral[300]};
+    border-bottom: 1px solid ${({ $hasError }) => 
+      $hasError ? theme.colors.error.main : theme.colors.neutral[300]};
     border-radius: 0;
     padding-left: 0;
     padding-right: 0;
     
     &:focus-within {
-      border-bottom-color: ${props.hasError ? theme.colors.error.main : theme.colors.primary[500]};
-      box-shadow: 0 1px 0 0 ${props.hasError ? theme.colors.error.main : theme.colors.primary[500]};
+      border-bottom-color: ${({ $hasError }) => 
+        $hasError ? theme.colors.error.main : theme.colors.primary[500]};
+      box-shadow: 0 1px 0 0 ${({ $hasError }) => 
+        $hasError ? theme.colors.error.main : theme.colors.primary[500]};
     }
   `,
 };
@@ -86,7 +94,12 @@ export const SelectWrapper = styled.div<{ $hasError: boolean; $disabled: boolean
   transition: ${theme.transitions.default};
   
   ${({ $size = 'md' }) => selectSizeStyles[$size]}
-  ${({ $variant = 'outline', $hasError }) => selectVariantStyles[$variant]({ hasError: $hasError })}
+  ${({ $variant = 'outline', $hasError }) => 
+    $variant === 'outline' 
+      ? selectVariantStyles.outline 
+      : $variant === 'filled' 
+        ? selectVariantStyles.filled 
+        : selectVariantStyles.flushed}
   
   ${({ $disabled }) => $disabled && css`
     opacity: 0.6;

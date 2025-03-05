@@ -12,6 +12,7 @@ export interface ViewControlsProps {
   onLoadLayout: (name: string) => void;
   onClearCategories: () => void;
   onLoadMoreProducts: () => void;
+  onExportPdf: () => void;
   productLimit: number;
   onChangeProductLimit: (limit: number) => void;
   disabled?: boolean;

@@ -18,6 +18,8 @@ import Container from '@/components/layout/Container';
 import CategorySelector from './components/CategorySelector';
 import ViewControls from './components/ViewControls';
 import ProductGrid from './components/ProductGrid';
+import PDFExporter from './components/PDFExporter';
+import OrderingModal from './components/OrderingModal';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 
@@ -45,8 +47,9 @@ export const ProductCluster: React.FC<ProductClusterProps> = ({
   } = useProductsStore();
   
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [isPdfExporterOpen, setIsPdfExporterOpen] = useState(false);
+  const [isOrderingModalOpen, setIsOrderingModalOpen] = useState(false);
   const [layoutName, setLayoutName] = useState('');
-  const [draggedProductId, setDraggedProductId] = useState<string | null>(null);
   const [savedLayouts, setSavedLayouts] = useState<string[]>([]);
   const [productLimit, setProductLimit] = useState<number>(10);
   const [allProductSlugs, setAllProductSlugs] = useState<Record<string, string[]>>({});
@@ -66,7 +69,7 @@ export const ProductCluster: React.FC<ProductClusterProps> = ({
   
   // Todos los productos combinados de las categorías seleccionadas
   const allProducts = useMemo(() => {
-    const productList: Product[] = [];
+    let productList: Product[] = [];
     
     selectedCategories.forEach(slug => {
       if (products[slug]) {
@@ -74,8 +77,18 @@ export const ProductCluster: React.FC<ProductClusterProps> = ({
       }
     });
     
+    if (orderingMode && Object.keys(customOrder).length > 0) {
+      // Ordenar según customOrder
+      productList.sort((a, b) => {
+        // Asegurarse de que las posiciones son números
+        const posA = customOrder[a.id] !== undefined ? Number(customOrder[a.id]) : (Number(a.position) || 0);
+        const posB = customOrder[b.id] !== undefined ? Number(customOrder[b.id]) : (Number(b.position) || 0);
+        return posA - posB;
+      });
+    }
+    
     return productList;
-  }, [products, selectedCategories]);
+  }, [products, selectedCategories, orderingMode, customOrder]);
   
   // Total de productos disponibles (incluidos los no cargados)
   const totalProductCount = useMemo(() => {
@@ -92,40 +105,6 @@ export const ProductCluster: React.FC<ProductClusterProps> = ({
     
     return total;
   }, [selectedCategories, allProductSlugs, products]);
-  
-  // Manejar el inicio del arrastre de un producto
-  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, id: string) => {
-    setDraggedProductId(id);
-    e.dataTransfer.effectAllowed = 'move';
-    // Hace que la imagen arrastrada sea transparente
-    const img = new Image();
-    img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-    e.dataTransfer.setDragImage(img, 0, 0);
-  };
-  
-  // Manejar el arrastre sobre un producto
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  };
-  
-  // Manejar el soltado de un producto
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>, targetId: string) => {
-    e.preventDefault();
-    
-    if (draggedProductId && draggedProductId !== targetId) {
-      // Encontrar las posiciones actuales
-      const draggedIndex = allProducts.findIndex(p => p.id === draggedProductId);
-      const targetIndex = allProducts.findIndex(p => p.id === targetId);
-      
-      if (draggedIndex >= 0 && targetIndex >= 0) {
-        updateProductOrder(draggedProductId, targetIndex);
-        saveCustomOrder();
-      }
-    }
-    
-    setDraggedProductId(null);
-  };
   
   // Abrir modal para guardar layout
   const handleOpenSaveModal = () => {
@@ -175,6 +154,37 @@ export const ProductCluster: React.FC<ProductClusterProps> = ({
     });
   };
   
+  // Abrir exportador de PDF
+  const handleOpenPdfExporter = () => {
+    setIsPdfExporterOpen(true);
+  };
+  
+  // Cerrar exportador de PDF
+  const handleClosePdfExporter = () => {
+    setIsPdfExporterOpen(false);
+  };
+  
+  // Abrir/cerrar modal de ordenación
+  const handleToggleOrderingModal = () => {
+    setIsOrderingModalOpen(!isOrderingModalOpen);
+  };
+  
+  // Guardar orden personalizado de productos
+  const handleSaveOrder = (newOrder: Record<string, number>) => {
+    // Actualizar el orden en el store
+    Object.entries(newOrder).forEach(([id, position]) => {
+      updateProductOrder(id, position);
+    });
+    
+    // Guardar el orden actualizado
+    saveCustomOrder();
+    
+    // Activar el modo ordenación en el store para que se aplique el orden
+    if (!orderingMode) {
+      toggleOrderingMode();
+    }
+  };
+  
   // Cargar productos
   useEffect(() => {
     if (selectedCategories.length > 0) {
@@ -209,7 +219,7 @@ export const ProductCluster: React.FC<ProductClusterProps> = ({
           layout={gridLayout}
           onChangeLayout={setGridLayout}
           isOrderingMode={orderingMode}
-          onToggleOrderingMode={toggleOrderingMode}
+          onToggleOrderingMode={handleToggleOrderingModal}
           savedLayouts={savedLayouts}
           onSaveLayout={handleOpenSaveModal}
           onLoadLayout={handleLoadLayout}
@@ -217,6 +227,7 @@ export const ProductCluster: React.FC<ProductClusterProps> = ({
           onLoadMoreProducts={handleLoadMoreProducts}
           productLimit={productLimit}
           onChangeProductLimit={handleChangeProductLimit}
+          onExportPdf={handleOpenPdfExporter}
           disabled={loading}
         />
         
@@ -230,12 +241,11 @@ export const ProductCluster: React.FC<ProductClusterProps> = ({
             layout={gridLayout}
             isOrderingMode={orderingMode}
             customOrder={customOrder}
-            onProductDragStart={handleDragStart}
-            onProductDragOver={handleDragOver}
-            onProductDrop={handleDrop}
+            loading={loading}
           />
         )}
         
+        {/* Save Layout Modal */}
         {isSaveModalOpen && (
           <SaveLayoutModalOverlay>
             <SaveLayoutModal>
@@ -267,6 +277,24 @@ export const ProductCluster: React.FC<ProductClusterProps> = ({
             </SaveLayoutModal>
           </SaveLayoutModalOverlay>
         )}
+        
+        {/* PDF Exporter */}
+        {isPdfExporterOpen && (
+          <PDFExporter
+            products={allProducts}
+            onClose={handleClosePdfExporter}
+          />
+        )}
+        
+        {/* Ordering Modal */}
+        <OrderingModal
+          isOpen={isOrderingModalOpen}
+          onClose={handleToggleOrderingModal}
+          products={allProducts}
+          layout={gridLayout}
+          onSaveOrder={handleSaveOrder}
+          initialCustomOrder={customOrder}
+        />
       </Container>
     </ClusterContainer>
   );

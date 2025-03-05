@@ -25,6 +25,7 @@ export const ViewControls: React.FC<ViewControlsProps> = ({
   onLoadLayout,
   onClearCategories,
   onLoadMoreProducts,
+  onExportPdf,
   productLimit,
   onChangeProductLimit,
   disabled = false
@@ -45,7 +46,6 @@ export const ViewControls: React.FC<ViewControlsProps> = ({
   
   const handleLimitChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newLimit = parseInt(e.target.value, 10);
-    console.log("Cambiando límite a:", newLimit);
     onChangeProductLimit(newLimit);
   };
 
@@ -137,6 +137,35 @@ export const ViewControls: React.FC<ViewControlsProps> = ({
             </svg>
           </LayoutButton>
         </LayoutButtonGroup>
+
+        {/* Botón para exportar a PDF */}
+        <Button
+          onClick={onExportPdf}
+          variant="primary"
+          size="sm"
+          disabled={disabled || loadedProducts === 0}
+          leftIcon={
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              width="16" 
+              height="16" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+            >
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+          }
+        >
+          Exportar a PDF
+        </Button>
       </ControlsGroup>
       
       {/* Segunda fila de controles: límites y acciones */}
@@ -166,26 +195,31 @@ export const ViewControls: React.FC<ViewControlsProps> = ({
           </Button>
         )}
         
-        <OrderModeButton
-          active={isOrderingMode}
+        <Button
           onClick={onToggleOrderingMode}
-          disabled={disabled || totalProducts === 0}
+          variant={isOrderingMode ? "primary" : "outline"}
+          size="sm"
+          disabled={disabled || loadedProducts === 0}
+          leftIcon={
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+              width="16"
+              height="16"
+            >
+              <path d="M21 12c0 4.969-4.031 9-9 9s-9-4.031-9-9 4.031-9 9-9 9 4.031 9 9z"></path>
+              <path d="M3 12h18"></path>
+              <path d="M12 3v18"></path>
+            </svg>
+          }
         >
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            strokeWidth="2" 
-            strokeLinecap="round" 
-            strokeLinejoin="round"
-          >
-            <path d="M21 12c0 4.969-4.031 9-9 9s-9-4.031-9-9 4.031-9 9-9 9 4.031 9 9z"></path>
-            <path d="M3 12h18"></path>
-            <path d="M12 3v18"></path>
-          </svg>
-          {isOrderingMode ? 'Desactivar' : 'Activar'} ordenación
-        </OrderModeButton>
+          {isOrderingMode ? 'Ordenación activa' : 'Activar ordenación'}
+        </Button>
         
         {savedLayouts.length > 0 && (
           <LayoutSelect
