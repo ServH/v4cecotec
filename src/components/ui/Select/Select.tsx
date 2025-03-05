@@ -47,11 +47,11 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(({
       )}
       
       <SelectWrapper 
-        hasError={!!error}
-        disabled={disabled}
-        variant={variant}
-        size={size}
-      >
+  $hasError={!!error}
+  $disabled={disabled}
+  $variant={variant}
+  $size={size}
+>
         <StyledSelect
           id={selectId}
           ref={ref}

@@ -43,31 +43,31 @@ const responsive = <T extends any>(
   `;
 };
 
-export const StyledGrid = styled.div<GridProps>`
+export const StyledGrid = styled.div<{ $columns?: ResponsiveValue<number>; $gap?: ResponsiveValue<number | string> }>`
   display: grid;
   
-  ${({ columns = { base: 1, md: 2, lg: 3 } }) => responsive(
+  ${({ $columns = { base: 1, md: 2, lg: 3 } }) => responsive(
     'grid-template-columns',
-    columns,
+    $columns,
     (val) => `repeat(${val}, 1fr)`
   )}
   
-  ${({ gap }) => {
-    if (gap === undefined) {
+  ${({ $gap }) => {
+    if ($gap === undefined) {
       return css`gap: ${theme.spacing[4]};`;
     }
     
-    if (typeof gap === 'number') {
-      return css`gap: ${theme.spacing[gap]};`;
+    if (typeof $gap === 'number') {
+      return css`gap: ${theme.spacing[$gap as keyof typeof theme.spacing] || '16px'};`;
     }
     
-    if (typeof gap === 'string') {
-      return css`gap: ${gap};`;
+    if (typeof $gap === 'string') {
+      return css`gap: ${$gap};`;
     }
     
-    return responsive('gap', gap, (val) => {
+    return responsive('gap', $gap, (val) => {
       if (typeof val === 'number') {
-        return theme.spacing[val];
+        return theme.spacing[val as keyof typeof theme.spacing] || `${val}px`;
       }
       return val;
     });

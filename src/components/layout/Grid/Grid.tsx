@@ -11,8 +11,8 @@ export const Grid: React.FC<GridProps> = ({
 }) => {
   return (
     <StyledGrid
-      columns={columns}
-      gap={gap}
+      $columns={columns}
+      $gap={gap}
       className={className}
       {...rest}
     >

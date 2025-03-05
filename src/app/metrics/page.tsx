@@ -1,15 +1,15 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { fetchCategoriesTree, extractChildrenSlugs } from '@/services/api';
 import { Category } from '@/types/category.types';
-import LoadingState from '@/components/app/LoadingState';
-import ErrorState from '@/components/app/ErrorState';
-import CategoryStats from '@/components/sections/CategoryStats';
 import Header from '@/components/app/Header';
 import Navigation from '@/components/app/Navigation';
+import LoadingState from '@/components/app/LoadingState';
+import ErrorState from '@/components/app/ErrorState';
+import CategoryMetrics from '@/components/sections/CategoryMetrics';
 
-export default function Home() {
+export default function MetricsPage() {
   const [slugs, setSlugs] = useState<string[]>([]);
   const [categoriesTree, setCategoriesTree] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,14 +45,10 @@ export default function Home() {
     loadCategorySlugs();
   }, []);
   
-  // Memoize the slugs and tree to prevent unnecessary re-renders
-  const memoizedSlugs = useMemo(() => slugs, [slugs]);
-  const memoizedTree = useMemo(() => categoriesTree, [categoriesTree]);
-  
   if (loading) {
     return <LoadingState 
       title="Cargando categorías..."
-      message="Obteniendo estructura de categorías desde Cecotec" 
+      message="Obteniendo estructura de categorías para el análisis de métricas" 
     />;
   }
   
@@ -64,5 +60,11 @@ export default function Home() {
     />;
   }
   
-  return <CategoryStats slugs={memoizedSlugs} categoriesTree={memoizedTree} />;
+  return (
+    <>
+      <Header />
+      <Navigation />
+      <CategoryMetrics slugs={slugs} categoriesTree={categoriesTree} />
+    </>
+  );
 }

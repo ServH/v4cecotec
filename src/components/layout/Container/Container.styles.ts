@@ -13,13 +13,13 @@ const containerMaxWidths = {
   full: '100%',
 };
 
-export const StyledContainer = styled.div<ContainerProps>`
+export const StyledContainer = styled.div<{ $maxWidth?: string; $padding?: boolean }>`
   width: 100%;
   margin-left: auto;
   margin-right: auto;
-  max-width: ${({ maxWidth = 'lg' }) => containerMaxWidths[maxWidth]};
+  max-width: ${({ $maxWidth = 'lg' }) => containerMaxWidths[$maxWidth]};
   
-  ${({ padding = true }) => padding && css`
+  ${({ $padding = true }) => $padding && css`
     padding-left: ${theme.spacing[4]};
     padding-right: ${theme.spacing[4]};
     

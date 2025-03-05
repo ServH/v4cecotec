@@ -78,17 +78,17 @@ const selectVariantStyles = {
   `,
 };
 
-export const SelectWrapper = styled.div<SelectWrapperProps>`
+export const SelectWrapper = styled.div<{ $hasError: boolean; $disabled: boolean; $variant?: string; $size?: string }>`
   display: flex;
   align-items: center;
   position: relative;
   width: 100%;
   transition: ${theme.transitions.default};
   
-  ${({ size = 'md' }) => selectSizeStyles[size]}
-  ${({ variant = 'outline', hasError }) => selectVariantStyles[variant]({ hasError })}
+  ${({ $size = 'md' }) => selectSizeStyles[$size]}
+  ${({ $variant = 'outline', $hasError }) => selectVariantStyles[$variant]({ hasError: $hasError })}
   
-  ${({ disabled }) => disabled && css`
+  ${({ $disabled }) => $disabled && css`
     opacity: 0.6;
     cursor: not-allowed;
   `}
