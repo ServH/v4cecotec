@@ -77,7 +77,7 @@ const LandingPage: React.FC<LandingPageProps> = () => {
         </svg>
       ),
       path: '/cluster'
-    }
+    },
   ];
 
   return (
