@@ -18,8 +18,8 @@ export const Navigation: React.FC = () => {
         <NavigationList>
           <NavigationItem>
             <NavigationLink 
-              href="/categories"
-              className={pathname === '/categories' ? 'active' : ''}
+              href="/"
+              className={pathname === '/' ? 'active' : ''}
             >
               <NavigationIcon>
                 <svg 
@@ -92,6 +92,40 @@ export const Navigation: React.FC = () => {
                 </svg>
               </NavigationIcon>
               Cluster
+            </NavigationLink>
+          </NavigationItem>
+
+          <NavigationItem>
+            <NavigationLink 
+              href="/crawler"
+              className={pathname === '/crawler' ? 'active' : ''}
+            >
+              <NavigationIcon>
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                  width="20"
+                  height="20"
+                >
+                  <path d="M18 10h-4V6" />
+                  <path d="M22 10h-4" />
+                  <path d="M6 10h4V6" />
+                  <path d="M2 10h4" />
+                  <path d="M6 14H2" />
+                  <path d="M18 14h4" />
+                  <path d="M14 18v4" />
+                  <path d="M10 18v4" />
+                  <path d="M14 6V2" />
+                  <path d="M10 6V2" />
+                  <rect x="6" y="6" width="12" height="12" rx="2" />
+                </svg>
+              </NavigationIcon>
+              Web Crawler
             </NavigationLink>
           </NavigationItem>
         </NavigationList>
