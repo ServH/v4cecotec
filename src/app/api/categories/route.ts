@@ -3,7 +3,7 @@ import axios from 'axios';
 
 export async function GET() {
   try {
-    const response = await axios.get('https://cecotec.es/_next/data/PeYRTvNUKVaVr5l9zT3pv/es.json');
+    const response = await axios.get('https://cecotec.es/_next/data/cecommerce/es.json');
     return NextResponse.json(response.data);
   } catch (error) {
     console.error('Error al obtener el árbol de categorías:', error);

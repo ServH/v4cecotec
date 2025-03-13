@@ -2,7 +2,7 @@ import axios from 'axios';
 import { CrawlSettings, CrawlResult, PageIssue } from '@/types/crawler/crawler.types';
 
 // Endpoints
-const CRAWLER_API_BASE = '/api/crawler';
+const CRAWLER_API_BASE = 'http://localhost:3001/api/crawler';
 
 /**
  * Inicia un nuevo proceso de crawling
