@@ -10,6 +10,9 @@ export interface Product {
   description?: string;
   category?: string;
   position?: number;
+  upc?: string;         // Código UPC para cruzar con Excel
+  reference?: string;   // Referencia del producto
+  model?: string;       // Modelo del producto
 }
 
 export interface ProductExcelData {

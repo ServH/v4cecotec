@@ -42,6 +42,7 @@ export const OrderingModeMessage = styled.div`
   }
 `;
 
+// Actualización en ProductGrid.styles.ts
 export const ProductsGrid = styled.div<{ layout: GridLayout }>`
   display: grid;
   gap: ${theme.spacing[6]};
@@ -50,7 +51,7 @@ export const ProductsGrid = styled.div<{ layout: GridLayout }>`
     switch (layout) {
       case 'grid':
         return css`
-          grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); // Aumentado el tamaño mínimo
         `;
       case 'list':
         return css`
@@ -58,11 +59,11 @@ export const ProductsGrid = styled.div<{ layout: GridLayout }>`
         `;
       case 'compact':
         return css`
-          grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+          grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); // Aumentado el tamaño mínimo
         `;
       default:
         return css`
-          grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); // Aumentado el tamaño mínimo
         `;
     }
   }}

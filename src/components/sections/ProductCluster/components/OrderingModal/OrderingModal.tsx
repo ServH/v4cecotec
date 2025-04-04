@@ -309,20 +309,21 @@ const OrderingModal: React.FC<OrderingModalProps> = ({
          </ProductsContainer>
          
          {draggingProduct && (
-           <DragPreview
-             ref={dragPreviewRef}
-             style={{
-               transform: `translate(${dragPreviewPosition.x}px, ${dragPreviewPosition.y}px)`,
-               width: '200px'
-             }}
-           >
-             <EnhancedProductCard
-               product={draggingProduct || { id: '', name: '', slug: '', price: 0, stock: false, discount: 0, image: '' }}
-               layout="compact"
-               isDraggable={false}
-               excelData={useProductsStore.getState().excelData || undefined}
-             />
-           </DragPreview>
+  <DragPreview
+    ref={dragPreviewRef}
+    style={{
+      transform: `translate(${dragPreviewPosition.x}px, ${dragPreviewPosition.y}px)`,
+      width: '200px'
+    }}
+  >
+    <EnhancedProductCard
+      product={draggingProduct || { id: '', name: '', slug: '', price: 0, stock: false, discount: 0, image: '' }}
+      layout="compact"
+      isDraggable={false}
+      excelData={useProductsStore.getState().excelData || undefined}
+      showDetailedView={false} // No mostramos detalles en la previsualización de arrastre
+    />
+  </DragPreview>
          )}
        </ModalContent>
      </ModalContainer>

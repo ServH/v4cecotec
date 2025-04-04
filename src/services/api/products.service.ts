@@ -20,6 +20,7 @@ const createFallbackProduct = (slug: string, categorySlug: string, index: number
   };
 };
 
+
 // Función para obtener el detalle de un producto específico
 const getProductDetail = async (slug: string): Promise<Product | null> => {
   try {
@@ -68,6 +69,30 @@ const getProductDetail = async (slug: string): Promise<Product | null> => {
       description = data.shortDescription.replace(/<[^>]*>?/gm, '');
     }
     
+    // Extraer UPC del producto
+    let upc = '';
+    if (data.upc) {
+      upc = data.upc;
+    } else if (data.sku) {
+      upc = data.sku;
+    }
+    
+    // Extraer referencia del producto
+    let reference = '';
+    if (data.reference) {
+      reference = data.reference;
+    } else if (data.sku) {
+      reference = data.sku;
+    }
+    
+    // Extraer modelo del producto
+    let model = '';
+    if (data.model) {
+      model = data.model;
+    } else if (data.reference) {
+      model = data.reference;
+    }
+    
     // Construir el producto con los datos obtenidos
     return {
       id: data.id || slug,
@@ -81,7 +106,10 @@ const getProductDetail = async (slug: string): Promise<Product | null> => {
       description: description,
       category: data.categoryTree && data.categoryTree.length > 0 
         ? data.categoryTree[data.categoryTree.length - 1].name 
-        : ''
+        : '',
+      upc: upc,
+      reference: reference,
+      model: model
     };
   } catch (error) {
     // Simplemente registrar el error pero no devolver null, ya que manejaremos esto en el nivel superior

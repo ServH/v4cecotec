@@ -214,45 +214,52 @@ const ExcelUploader: React.FC<ExcelUploaderProps> = ({ onExcelDataLoaded, isLoad
   };
 
   // Create a mapping of product IDs to their data from Excel
-  const createProductMapping = (excelData: ExcelData): ProductExcelData => {
-    const productMapping: ProductExcelData = {};
-    
-    // Assume the first sheet contains the product data
-    const firstSheetName = Object.keys(excelData)[0];
-    if (!firstSheetName) return productMapping;
-    
-    const sheetData = excelData[firstSheetName];
+  // Create a mapping of product IDs to their data from Excel
+const createProductMapping = (excelData: ExcelData): ProductExcelData => {
+  const productMapping: ProductExcelData = {};
+  
+  // Assume the first sheet contains the product data
+  const firstSheetName = Object.keys(excelData)[0];
+  if (!firstSheetName) return productMapping;
+  
+  const sheetData = excelData[firstSheetName];
 
-    // Process each row in the sheet
-    sheetData.forEach((row, index) => {
-      // Try to find a suitable identifier column 
-      // Check for "Nombre" first, then try other common identifiers
-      const idCandidates = ['Nombre', 'Modelo', 'id', 'ID', 'SKU', 'sku', 'model', 'Referencia', 'Code'];
-      
-      let productId = null;
-      
-      // Try each possible ID column
-      for (const candidate of idCandidates) {
-        if (row[candidate] !== undefined) {
-          productId = String(row[candidate]).trim();
-          break;
-        }
-      }
-      
-      // If no ID found, use the row index as fallback
-      if (!productId) {
-        productId = `row_${index + 1}`;
-      }
-      
-      // Store all columns for this product
-      productMapping[productId] = { ...row };
-      
-      // Also store by lowercase version to help with matching
-      productMapping[productId.toLowerCase()] = { ...row };
-    });
+  // Process each row in the sheet
+  sheetData.forEach((row, index) => {
+    // Try to find a suitable identifier column - prioritize Referencia
+    const reference = row.Referencia || row.referencia || row.REF || row.ref;
+    const upc = row.UPC || row.upc || row.EAN || row.ean || row.código;
     
-    return productMapping;
-  };
+    if (reference) {
+      // Store data by reference (for matching with product.reference)
+      const refStr = String(reference).trim();
+      productMapping[refStr] = { ...row };
+      
+      // Also store without leading zeros for flexible matching
+      const refNormalized = refStr.replace(/^0+/, '');
+      if (refNormalized !== refStr) {
+        productMapping[refNormalized] = { ...row };
+      }
+    }
+    
+    if (upc) {
+      // Store data by UPC (for matching with product.upc)
+      const upcStr = String(upc).trim();
+      productMapping[upcStr] = { ...row };
+      
+      // Also store without leading zeros for flexible matching
+      const upcNormalized = upcStr.replace(/^0+/, '');
+      if (upcNormalized !== upcStr) {
+        productMapping[upcNormalized] = { ...row };
+      }
+    }
+    
+    // Also store by row index as fallback
+    productMapping[`row_${index + 1}`] = { ...row };
+  });
+  
+  return productMapping;
+};
 
   // Trigger the file input click
   const handleUploadClick = () => {

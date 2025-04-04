@@ -4,449 +4,470 @@ import { theme } from '@/styles/theme';
 import { Product } from '@/stores/products/products.types';
 import { ProductExcelData } from '@/components/sections/ProductCluster/components/ExcelUploader/ExcelUploader';
 
-// Styled components for the enhanced card
+// Styled components para la tarjeta
 const CardContainer = styled.div<{ layout?: string; isDraggable?: boolean }>`
- position: relative;
- height: 100%;
- transition: transform 0.2s ease, box-shadow 0.2s ease;
- cursor: ${({ isDraggable }) => (isDraggable ? 'grab' : 'default')};
- 
- &:hover {
-   transform: translateY(-4px);
-   box-shadow: ${theme.shadows.md};
- }
- 
- &:active {
-   cursor: ${({ isDraggable }) => (isDraggable ? 'grabbing' : 'default')};
- }
+  position: relative;
+  height: 100%;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: ${({ isDraggable }) => (isDraggable ? 'grab' : 'default')};
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: ${theme.shadows.md};
+  }
+  
+  &:active {
+    cursor: ${({ isDraggable }) => (isDraggable ? 'grabbing' : 'default')};
+  }
 `;
 
 const StyledCard = styled.div`
- display: flex;
- flex-direction: column;
- height: 100%;
- border-radius: ${theme.radii.lg};
- overflow: hidden;
- background-color: white;
- box-shadow: ${theme.shadows.sm};
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: ${theme.radii.lg};
+  overflow: hidden;
+  background-color: white;
+  box-shadow: ${theme.shadows.sm};
 `;
 
 const CardImageContainer = styled.div<{ layout?: string }>`
- position: relative;
- width: 100%;
- padding-top: 100%; /* Aspect ratio 1:1 */
- background-color: ${theme.colors.neutral[100]};
- overflow: hidden;
+  position: relative;
+  width: 100%;
+  padding-top: 75%; /* Aspect ratio 4:3 para una mejor visualización */
+  background-color: ${theme.colors.neutral[100]};
+  overflow: hidden;
 `;
 
 const CardImage = styled.img`
- position: absolute;
- top: 0;
- left: 0;
- width: 100%;
- height: 100%;
- object-fit: contain;
- transition: transform 0.3s ease;
- padding: ${theme.spacing[4]};
- 
- ${CardContainer}:hover & {
-   transform: scale(1.05);
- }
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+  padding: ${theme.spacing[4]};
+  
+  ${CardContainer}:hover & {
+    transform: scale(1.05);
+  }
 `;
 
 const CardBody = styled.div`
- display: flex;
- flex-direction: column;
- flex: 1;
- padding: ${theme.spacing[4]};
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: ${theme.spacing[4]};
 `;
 
 const CardTitle = styled.h3`
- font-size: ${theme.typography.fontSizes.md};
- font-weight: ${theme.typography.fontWeights.semibold};
- color: ${theme.colors.text.primary};
- margin-bottom: ${theme.spacing[2]};
- min-height: 48px;
- display: -webkit-box;
- -webkit-line-clamp: 2;
- -webkit-box-orient: vertical;
- overflow: hidden;
+  font-size: ${theme.typography.fontSizes.md};
+  font-weight: ${theme.typography.fontWeights.semibold};
+  color: ${theme.colors.text.primary};
+  margin-bottom: ${theme.spacing[2]};
+  min-height: 40px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 `;
 
 const CardPrice = styled.div`
- font-size: ${theme.typography.fontSizes.lg};
- font-weight: ${theme.typography.fontWeights.bold};
- color: ${theme.colors.primary[700]};
- margin-bottom: ${theme.spacing[2]};
+  font-size: ${theme.typography.fontSizes.lg};
+  font-weight: ${theme.typography.fontWeights.bold};
+  color: ${theme.colors.primary[700]};
+  margin-bottom: ${theme.spacing[2]};
 `;
 
 const StockBadge = styled.span<{ inStock: boolean }>`
- display: inline-block;
- padding: ${theme.spacing[1]} ${theme.spacing[2]};
- border-radius: ${theme.radii.full};
- font-size: ${theme.typography.fontSizes.xs};
- font-weight: ${theme.typography.fontWeights.medium};
- margin-bottom: ${theme.spacing[3]};
- background-color: ${({ inStock }) => 
-   inStock ? theme.colors.success.light : theme.colors.error.light};
- color: ${({ inStock }) => 
-   inStock ? theme.colors.success.dark : theme.colors.error.dark};
+  display: inline-block;
+  padding: ${theme.spacing[1]} ${theme.spacing[2]};
+  border-radius: ${theme.radii.full};
+  font-size: ${theme.typography.fontSizes.xs};
+  font-weight: ${theme.typography.fontWeights.medium};
+  margin-bottom: ${theme.spacing[3]};
+  background-color: ${({ inStock }) => 
+    inStock ? theme.colors.success.light : theme.colors.error.light};
+  color: ${({ inStock }) => 
+    inStock ? theme.colors.success.dark : theme.colors.error.dark};
 `;
 
-// Specific excel data display components
+// Componentes para los datos del Excel
 const ExcelDataContainer = styled.div`
- margin-top: ${theme.spacing[3]};
- border-top: 1px solid ${theme.colors.divider};
- padding-top: ${theme.spacing[3]};
+  margin-top: ${theme.spacing[2]};
+  border-top: 1px solid ${theme.colors.divider};
+  padding-top: ${theme.spacing[2]};
 `;
 
-const SpecSection = styled.div`
- margin-bottom: ${theme.spacing[3]};
+// Sección de detalles adicionales con fondo azul claro similar al Excel
+const DetailsSectionHeader = styled.div`
+  background-color: #e6f2ff; /* Color azul claro similar al Excel */
+  padding: ${theme.spacing[1]} ${theme.spacing[2]};
+  font-weight: ${theme.typography.fontWeights.medium};
+  border-radius: ${theme.radii.sm};
+  margin-bottom: ${theme.spacing[2]};
+  font-size: ${theme.typography.fontSizes.sm};
 `;
 
-const SpecTitle = styled.h4`
- font-size: ${theme.typography.fontSizes.sm};
- font-weight: ${theme.typography.fontWeights.semibold};
- color: ${theme.colors.text.primary};
- margin-bottom: ${theme.spacing[2]};
- padding: ${theme.spacing[1]} ${theme.spacing[2]};
- background-color: ${theme.colors.primary[50]};
- border-radius: ${theme.radii.md};
+// Campo de referencia con fondo similar al Excel
+const ReferenceItem = styled.div`
+  background-color: #e6f2ff; /* Color azul claro */
+  padding: ${theme.spacing[1]} ${theme.spacing[2]};
+  border-radius: ${theme.radii.sm};
+  margin-bottom: ${theme.spacing[2]};
+  display: flex;
+  flex-direction: column;
 `;
 
-const SpecTable = styled.div`
- display: grid;
- grid-template-columns: 1fr 1fr;
- gap: ${theme.spacing[1]};
- margin-bottom: ${theme.spacing[2]};
+// Campo de subcategoría con fondo similar al Excel
+const CategoryItem = styled.div`
+  background-color: #fff2e6; /* Color naranja claro */
+  padding: ${theme.spacing[1]} ${theme.spacing[2]};
+  border-radius: ${theme.radii.sm};
+  margin-bottom: ${theme.spacing[2]};
+  display: flex;
+  flex-direction: column;
 `;
 
-const SpecItem = styled.div<{ highlight?: boolean }>`
- display: flex;
- flex-direction: column;
- padding: ${theme.spacing[1]} ${theme.spacing[2]};
- border-radius: ${theme.radii.sm};
- background-color: ${({ highlight }) => highlight ? theme.colors.primary[50] : 'transparent'};
+// Campos de orden con fondo similar al Excel
+const OrderItem = styled.div`
+  background-color: #e6ffe6; /* Color verde claro */
+  padding: ${theme.spacing[1]} ${theme.spacing[2]};
+  border-radius: ${theme.radii.sm};
+  margin-bottom: ${theme.spacing[2]};
+  display: flex;
+  flex-direction: column;
 `;
 
-const SpecLabel = styled.span`
- font-size: ${theme.typography.fontSizes.xs};
- color: ${theme.colors.text.secondary};
+// Item genérico
+const DataItem = styled.div`
+  padding: ${theme.spacing[1]} ${theme.spacing[2]};
+  border-radius: ${theme.radii.sm};
+  margin-bottom: ${theme.spacing[2]};
+  display: flex;
+  flex-direction: column;
 `;
 
-const SpecValue = styled.span<{ highlight?: boolean }>`
- font-size: ${theme.typography.fontSizes.sm};
- font-weight: ${({ highlight }) => highlight ? theme.typography.fontWeights.semibold : theme.typography.fontWeights.medium};
- color: ${({ highlight }) => highlight ? theme.colors.primary[700] : theme.colors.text.primary};
+const ItemLabel = styled.span`
+  font-size: ${theme.typography.fontSizes.xs};
+  color: ${theme.colors.text.secondary};
 `;
 
-const FeatureList = styled.ul`
- list-style: none;
- padding: 0;
- margin: 0;
+const ItemValue = styled.span`
+  font-size: ${theme.typography.fontSizes.sm};
+  font-weight: ${theme.typography.fontWeights.medium};
+  color: ${theme.colors.text.primary};
 `;
 
-const FeatureItem = styled.li`
- display: flex;
- align-items: center;
- font-size: ${theme.typography.fontSizes.sm};
- margin-bottom: ${theme.spacing[1]};
- 
- &:before {
-   content: "•";
-   color: ${theme.colors.primary[500]};
-   font-weight: bold;
-   margin-right: ${theme.spacing[2]};
- }
+// Item UPC en la parte superior
+const UpcItem = styled.div`
+  background-color: #2196f3; /* Color azul brillante */
+  color: white;
+  padding: ${theme.spacing[1]} ${theme.spacing[3]};
+  border-radius: ${theme.radii.md};
+  margin-bottom: ${theme.spacing[3]};
+  display: inline-block;
+  font-weight: ${theme.typography.fontWeights.semibold};
+  font-size: ${theme.typography.fontSizes.sm};
 `;
 
-const ModelBox = styled.div`
- background-color: ${theme.colors.primary[700]};
- color: white;
- border-radius: ${theme.radii.md};
- padding: ${theme.spacing[2]} ${theme.spacing[3]};
- font-weight: ${theme.typography.fontWeights.semibold};
- font-size: ${theme.typography.fontSizes.sm};
- margin-bottom: ${theme.spacing[3]};
- display: inline-block;
+// Componente para las imágenes de producto en formato más amigable
+const ProductImage = styled.div`
+  background-color: #f0f0f0; /* Color gris claro */
+  padding: ${theme.spacing[1]} ${theme.spacing[2]};
+  border-radius: ${theme.radii.sm};
+  margin-bottom: ${theme.spacing[2]};
+  font-size: ${theme.typography.fontSizes.xs};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+// Componente para destacados
+const HighlightItem = styled.div`
+  background-color: #ffecb3; /* Color amarillo claro */
+  padding: ${theme.spacing[1]} ${theme.spacing[2]};
+  border-radius: ${theme.radii.sm};
+  margin-bottom: ${theme.spacing[2]};
+  display: flex;
+  flex-direction: column;
 `;
 
 // Placeholder image for missing product images
 const PLACEHOLDER_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0wIDAgSDIwMCBWMjAwIEgwIFoiIGZpbGw9IiNFRUVFRUUiLz4KPHBhdGggZD0iTTk0LjkgMTExLjhDOTQuOSAxMTUuMyA5OC43IDExOC4yIDEwMy4zIDExOC4yQzEwNy45IDExOC4yIDExMS43IDExNS4zIDExMS43IDExMS44QzExMS43IDEwOC4zIDEwNy45IDEwNS40IDEwMy4zIDEwNS40Qzk4LjcgMTA1LjQgOTQuOSAxMDguMyA5NC45IDExMS44WiIgZmlsbD0iIzk5OSIvPgo8cGF0aCBkPSJNMTQ1LjggODcuNkMxNDUuOCA5OS4zIDEzNi4yIDEwOC44IDEyNC41IDEwOC44QzExMi44IDEwOC44IDEwMy4zIDk5LjMgMTAzLjMgODcuNkMxMDMuMyA3NS45IDExMi44IDY2LjQgMTI0LjUgNjYuNEMxMzYuMiA2Ni40IDE0NS44IDc1LjkgMTQ1LjggODcuNloiIGZpbGw9IiM5OTkiLz4KPHBhdGggZD0iTTEyNC41IDEyOC4xQzE1MC4xIDEyOC4xIDE3Ny4xIDE0MS4yIDE5Mi42IDE2Mi44TDE5Mi42IDEzMy43QzE3Ny4xIDExMi4xIDE1MC4xIDk5IDE4NC41IDk5QzE1OC45IDk5IDEzMS45IDExMi4xIDExNi40IDEzMy43TDExNi40IDE2Mi44QzEzMS45IDE0MS4yIDE1OC45IDEyOC4xIDEyNC41IDEyOC4xWiIgZmlsbD0iIzk5OSIvPgo8L3N2Zz4K';
 
 interface EnhancedProductCardProps {
- product: Product;
- excelData?: ProductExcelData;
- layout?: 'grid' | 'list' | 'compact';
- isDraggable?: boolean;
- onDragStart?: (e: React.DragEvent<HTMLDivElement>, id: string) => void;
- onDragOver?: (e: React.DragEvent<HTMLDivElement>) => void;
- onDrop?: (e: React.DragEvent<HTMLDivElement>, id: string) => void;
+  product: Product;
+  excelData?: ProductExcelData;
+  layout?: 'grid' | 'list' | 'compact';
+  isDraggable?: boolean;
+  showDetailedView?: boolean;
+  onDragStart?: (e: React.DragEvent<HTMLDivElement>, id: string) => void;
+  onDragOver?: (e: React.DragEvent<HTMLDivElement>) => void;
+  onDrop?: (e: React.DragEvent<HTMLDivElement>, id: string) => void;
 }
 
 // Helper to find the product in the Excel data
 const findProductInExcelData = (product: Product, excelData?: ProductExcelData): any => {
- if (!excelData) return null;
- 
- // Try to find the product by id
- if (excelData[product.id]) {
-   return excelData[product.id];
- }
- 
- // Try to find by name (exact match)
- if (product.name && excelData[product.name]) {
-   return excelData[product.name];
- }
- 
- // Try to find by name in lowercase (case-insensitive match)
- const nameLower = product.name.toLowerCase();
- if (nameLower && excelData[nameLower]) {
-   return excelData[nameLower];
- }
- 
- // Try to find by partial match in product name
- const normalizedName = product.name.toLowerCase().trim();
- const normalizedSlug = product.slug.toLowerCase().trim();
- 
- for (const [key, data] of Object.entries(excelData)) {
-   // Try matching by Nombre
-   const excelName = data.Nombre?.toLowerCase()?.trim() || '';
-   // Try matching by Modelo
-   const excelModel = data.Modelo?.toLowerCase()?.trim() || '';
-   
-   if (
-     excelName.includes(normalizedName) || 
-     normalizedName.includes(excelName) ||
-     excelModel.includes(normalizedSlug) ||
-     normalizedSlug.includes(excelModel)
-   ) {
-     return data;
-   }
- }
- 
- return null;
+  if (!excelData) return null;
+  
+  // Normalizar el UPC - quitar el cero inicial si existe
+  const upc = product.upc ? product.upc.replace(/^0+/, '') : '';
+  if (upc && excelData[upc]) {
+    return excelData[upc];
+  }
+  
+  // Buscar por referencia si existe en el producto
+  if (product.reference && excelData[product.reference]) {
+    return excelData[product.reference];
+  }
+  
+  // Buscar por coincidencia por otros campos
+  for (const [key, data] of Object.entries(excelData)) {
+    // Comprobar si key es igual al UPC sin ceros iniciales
+    const normalizedKey = key.replace(/^0+/, '');
+    if (upc && normalizedKey === upc) {
+      return data;
+    }
+    
+    // Buscar por referencia en los datos del Excel
+    const excelRef = data.Referencia || data.referencia || data.REF || data.ref;
+    if (excelRef && product.reference && excelRef.toString() === product.reference) {
+      return data;
+    }
+    
+    // Si fallan todos los métodos anteriores, buscar por nombre
+    if (data.Nombre && product.name && 
+        data.Nombre.toString().toLowerCase().includes(product.name.toLowerCase())) {
+      return data;
+    }
+  }
+  
+  return null;
 };
 
-// Helper to extract columns in the AL-BQ range
-const extractTargetColumnsData = (productData: any) => {
- if (!productData) return null;
- 
- // Filter for columns within AL-BQ range
- const result: { [key: string]: any } = {};
- 
- // Define the column range (AL = 37, BQ = 68)
- const startCol = 37; // AL
- const endCol = 68;   // BQ
- 
- // Map of column indices to Excel column names
- const colIndexToName: { [key: number]: string } = {};
- for (let i = startCol; i <= endCol; i++) {
-   const colName = String.fromCharCode(Math.floor(i / 26) + 64) + String.fromCharCode((i % 26) + 65);
-   colIndexToName[i] = colName;
- }
- 
- // Extract data from the columns in range
- Object.entries(productData).forEach(([key, value]) => {
-   // Include specific columns of interest regardless of their position
-   const importantColumns = ['Modelo', 'Nombre', 'Peso', 'Color', 'Material', 'Dimensiones'];
-   if (importantColumns.includes(key)) {
-     result[key] = value;
-   }
-   
-   // Check if the column name might be in our target range
-   for (let i = startCol; i <= endCol; i++) {
-     const colName = colIndexToName[i];
-     if (key === colName || key.includes(colName)) {
-       result[key] = value;
-     }
-   }
- });
- 
- return result;
-};
-
-// Format data for display
-const formatDisplayData = (productData: any) => {
- if (!productData) return null;
- 
- // Group data into logical sections
- const specs = {
-   basic: [] as { label: string; value: any }[],
-   dimensions: [] as { label: string; value: any }[],
-   features: [] as string[],
-   highlights: [] as { label: string; value: any }[]
- };
- 
- // Process each key in the extracted data
- for (const key of Object.keys(productData)) {
-   const value = productData[key];
-   if (value === undefined || value === null || value === '') continue;
-   
-   // Categorize the data into sections
-   if (['Altura', 'Ancho', 'Profundidad', 'Dimensiones'].includes(key)) {
-     specs.dimensions.push({ label: key, value });
-   } else if (key.includes('Características') || key.includes('Feature')) {
-     if (typeof value === 'string') {
-       // Split by delimiters
-       const features = value.split(/[,;.\n]/).filter(f => f.trim()).map(f => f.trim());
-       specs.features.push(...features);
-     } else {
-       specs.features.push(String(value));
-     }
-   } else if (['Modelo', 'Material', 'Color'].includes(key)) {
-     specs.highlights.push({ label: key, value });
-   } else {
-     // Everything else goes to basic specs
-     specs.basic.push({ label: key, value });
-   }
- }
- 
- return specs;
+// Función para filtrar y ordenar los campos del excel que queremos mostrar
+const extractExcelColumns = (productData: any) => {
+  if (!productData) return null;
+  
+  const result: Record<string, any> = {};
+  
+  // Extraer referencia (Ref Cruce)
+  const referencia = productData.Referencia || productData.referencia || productData['Ref Cruce'] || '';
+  if (referencia) {
+    result.referencia = referencia;
+  }
+  
+  // Extraer subcategoría
+  const subcategoria = productData.Subcategoria || productData.subcategoria || productData.Subcategoría || '';
+  if (subcategoria) {
+    result.subcategoria = subcategoria;
+  }
+  
+  // Extraer órdenes
+  const ordenHoja = productData['Orden Hoja PS'] || '';
+  if (ordenHoja) {
+    result.ordenHoja = ordenHoja;
+  }
+  
+  const ordenColumna = productData['Orden Columna PS'] || '';
+  if (ordenColumna) {
+    result.ordenColumna = ordenColumna;
+  }
+  
+  // Extraer imagen del producto
+  const imagenProducto = productData['Imagen Producto'] || '';
+  if (imagenProducto) {
+    result.imagenProducto = imagenProducto;
+  }
+  
+  // Extraer highlights
+  const highlight1 = productData['Highlight 1'] || '';
+  if (highlight1) {
+    result.highlight1 = highlight1;
+  }
+  
+  const highlight3 = productData['Highlight 3'] || '';
+  if (highlight3) {
+    result.highlight3 = highlight3;
+  }
+  
+  // Extraer campos de precios y márgenes si existen
+  const fieldPrefixes = ['P.PVP', 'PVPr', 'Margen', 'C.F', 'P1', 'P2', 'P3', 'P4', 'P5', 'NV', 'UPC', 'CMP'];
+  
+  for (const [key, value] of Object.entries(productData)) {
+    if (value === null || value === undefined || value === '') continue;
+    
+    // Si la clave comienza con alguno de los prefijos, la incluimos
+    for (const prefix of fieldPrefixes) {
+      if (key.startsWith(prefix)) {
+        result[key] = value;
+        break;
+      }
+    }
+  }
+  
+  return result;
 };
 
 const EnhancedProductCard: React.FC<EnhancedProductCardProps> = ({
- product,
- excelData,
- layout = 'grid',
- isDraggable = false,
- onDragStart,
- onDragOver,
- onDrop
+  product,
+  excelData,
+  layout = 'grid',
+  isDraggable = false,
+  showDetailedView = false,
+  onDragStart,
+  onDragOver,
+  onDrop
 }) => {
- const [imageError, setImageError] = useState(false);
- 
- // Find this product in the Excel data
- const productExcelData = findProductInExcelData(product, excelData);
- 
- // Extract target columns data
- const extractedData = extractTargetColumnsData(productExcelData);
- 
- // Format the data for display
- const formattedData = formatDisplayData(extractedData);
- 
- const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
-   if (onDragStart && isDraggable) {
-     onDragStart(e, product.id);
-   }
- };
+  const [imageError, setImageError] = useState(false);
+  
+  // Find this product in the Excel data
+  const productExcelData = findProductInExcelData(product, excelData);
+  
+  // Extraer campos relevantes
+  const excelColumns = extractExcelColumns(productExcelData);
+  
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
+    if (onDragStart && isDraggable) {
+      onDragStart(e, product.id);
+    }
+  };
 
- const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-   if (onDragOver && isDraggable) {
-     e.preventDefault();
-     onDragOver(e);
-   }
- };
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    if (onDragOver && isDraggable) {
+      e.preventDefault();
+      onDragOver(e);
+    }
+  };
 
- const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-   if (onDrop && isDraggable) {
-     e.preventDefault();
-     onDrop(e, product.id);
-   }
- };
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    if (onDrop && isDraggable) {
+      e.preventDefault();
+      onDrop(e, product.id);
+    }
+  };
 
- const handleImageError = () => {
-   setImageError(true);
- };
+  const handleImageError = () => {
+    setImageError(true);
+  };
 
- // Get product model from Excel data or from product itself
- const productModel = productExcelData?.Modelo || product.id;
+  // UPC normalizado para mostrar
+  const upcDisplay = product.upc ? product.upc.replace(/^0+/, '') : '';
 
- return (
-   <CardContainer 
-     layout={layout}
-     isDraggable={isDraggable}
-     draggable={isDraggable}
-     onDragStart={handleDragStart}
-     onDragOver={handleDragOver}
-     onDrop={handleDrop}
-     data-product-id={product.id}
-   >
-     <StyledCard>
-       <CardImageContainer layout={layout}>
-         <CardImage 
-           src={imageError || !product.image ? PLACEHOLDER_IMAGE : product.image}
-           alt={product.name}
-           onError={handleImageError}
-         />
-       </CardImageContainer>
+  return (
+    <CardContainer 
+      layout={layout}
+      isDraggable={isDraggable}
+      draggable={isDraggable}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+      data-product-id={product.id}
+    >
+      <StyledCard>
+        <CardImageContainer layout={layout}>
+          <CardImage 
+            src={imageError || !product.image ? PLACEHOLDER_IMAGE : product.image}
+            alt={product.name}
+            onError={handleImageError}
+          />
+        </CardImageContainer>
 
-       <CardBody layout={layout}>
-         {productExcelData?.Modelo && (
-           <ModelBox>{productExcelData.Modelo}</ModelBox>
-         )}
-         
-         <CardTitle layout={layout}>
-           {productExcelData?.Nombre || product.name || 'Producto sin nombre'}
-         </CardTitle>
-         
-         <CardPrice layout={layout}>
-           {product.price > 0 ? `${product.price.toFixed(2)}€` : 'Precio no disponible'}
-         </CardPrice>
-         
-         <StockBadge inStock={product.stock}>
-           {product.stock ? 'En stock' : 'Sin stock'}
-         </StockBadge>
-         
-         {formattedData && (
-           <ExcelDataContainer>
-             {formattedData.highlights.length > 0 && (
-               <SpecSection>
-                 <SpecTitle>Características Destacadas</SpecTitle>
-                 <SpecTable>
-                   {formattedData.highlights.map((spec, idx) => (
-                     <SpecItem key={idx} highlight={true}>
-                       <SpecLabel>{spec.label}</SpecLabel>
-                       <SpecValue highlight={true}>{spec.value}</SpecValue>
-                     </SpecItem>
-                   ))}
-                 </SpecTable>
-               </SpecSection>
-             )}
-             
-             {formattedData.dimensions.length > 0 && (
-               <SpecSection>
-                 <SpecTitle>Dimensiones</SpecTitle>
-                 <SpecTable>
-                   {formattedData.dimensions.map((spec, idx) => (
-                     <SpecItem key={idx}>
-                       <SpecLabel>{spec.label}</SpecLabel>
-                       <SpecValue>{spec.value}</SpecValue>
-                     </SpecItem>
-                   ))}
-                 </SpecTable>
-               </SpecSection>
-             )}
-             
-             {formattedData.basic.length > 0 && (
-               <SpecSection>
-                 <SpecTitle>Especificaciones</SpecTitle>
-                 <SpecTable>
-                   {formattedData.basic.map((spec, idx) => (
-                     <SpecItem key={idx}>
-                       <SpecLabel>{spec.label}</SpecLabel>
-                       <SpecValue>{spec.value}</SpecValue>
-                     </SpecItem>
-                   ))}
-                 </SpecTable>
-               </SpecSection>
-             )}
-             
-             {formattedData.features.length > 0 && (
-               <SpecSection>
-                 <SpecTitle>Características</SpecTitle>
-                 <FeatureList>
-                   {formattedData.features.map((feature, idx) => (
-                     <FeatureItem key={idx}>{feature}</FeatureItem>
-                   ))}
-                 </FeatureList>
-               </SpecSection>
-             )}
-           </ExcelDataContainer>
-         )}
-       </CardBody>
-     </StyledCard>
-   </CardContainer>
- );
+        <CardBody layout={layout}>
+          {/* Datos básicos visibles siempre */}
+          {showDetailedView && upcDisplay && (
+            <UpcItem>UPC: {upcDisplay}</UpcItem>
+          )}
+          
+          <CardTitle layout={layout}>
+            {productExcelData?.Nombre || product.name || 'Producto sin nombre'}
+          </CardTitle>
+          
+          <CardPrice layout={layout}>
+            {product.price > 0 ? `${product.price.toFixed(2)}€` : 'Precio no disponible'}
+          </CardPrice>
+          
+          <StockBadge inStock={product.stock}>
+            {product.stock ? 'En stock' : 'Sin stock'}
+          </StockBadge>
+          
+          {/* Mostrar datos del Excel en modo ordenación */}
+          {showDetailedView && excelColumns && (
+            <ExcelDataContainer>
+              <DetailsSectionHeader>Detalles adicionales</DetailsSectionHeader>
+              
+              {excelColumns.referencia && (
+                <ReferenceItem>
+                  <ItemLabel>Ref Cruce</ItemLabel>
+                  <ItemValue>{excelColumns.referencia}</ItemValue>
+                </ReferenceItem>
+              )}
+              
+              {excelColumns.subcategoria && (
+                <CategoryItem>
+                  <ItemLabel>Subcategoría</ItemLabel>
+                  <ItemValue>{excelColumns.subcategoria}</ItemValue>
+                </CategoryItem>
+              )}
+              
+              {excelColumns.ordenHoja && (
+                <OrderItem>
+                  <ItemLabel>Orden Hoja PS</ItemLabel>
+                  <ItemValue>{excelColumns.ordenHoja}</ItemValue>
+                </OrderItem>
+              )}
+              
+              {excelColumns.ordenColumna && (
+                <OrderItem>
+                  <ItemLabel>Orden Columna PS</ItemLabel>
+                  <ItemValue>{excelColumns.ordenColumna}</ItemValue>
+                </OrderItem>
+              )}
+              
+              {excelColumns.imagenProducto && (
+                <ProductImage>
+                  <ItemLabel>Imagen Producto</ItemLabel>
+                  <ItemValue>{excelColumns.imagenProducto}</ItemValue>
+                </ProductImage>
+              )}
+              
+              {excelColumns.highlight1 && (
+                <HighlightItem>
+                  <ItemLabel>Highlight 1</ItemLabel>
+                  <ItemValue>{excelColumns.highlight1}</ItemValue>
+                </HighlightItem>
+              )}
+              
+              {excelColumns.highlight3 && (
+                <HighlightItem>
+                  <ItemLabel>Highlight 3</ItemLabel>
+                  <ItemValue>{excelColumns.highlight3}</ItemValue>
+                </HighlightItem>
+              )}
+              
+              {/* Mostrar otros campos financieros si existen */}
+              {Object.entries(excelColumns).map(([key, value]) => {
+                // Omitir los que ya mostramos específicamente
+                if (['referencia', 'subcategoria', 'ordenHoja', 'ordenColumna', 
+                     'imagenProducto', 'highlight1', 'highlight3'].includes(key)) {
+                  return null;
+                }
+                
+                return (
+                  <DataItem key={key}>
+                    <ItemLabel>{key}</ItemLabel>
+                    <ItemValue>{value}</ItemValue>
+                  </DataItem>
+                );
+              })}
+            </ExcelDataContainer>
+          )}
+        </CardBody>
+      </StyledCard>
+    </CardContainer>
+  );
 };
 
 export default EnhancedProductCard;

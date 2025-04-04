@@ -31,6 +31,7 @@ const DraggableProductCard: React.FC<DraggableProductCardProps> = ({
   onDrop
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
+  const { excelData } = useProductsStore();
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
     onDragStart(e, product, index);
@@ -92,7 +93,8 @@ const DraggableProductCard: React.FC<DraggableProductCardProps> = ({
           product={product}
           layout={layout}
           isDraggable={false}
-          excelData={useProductsStore.getState().excelData || undefined}
+          excelData={excelData || undefined}
+          showDetailedView={true}
         />
       </CardWrapper>
     </DraggableContainer>

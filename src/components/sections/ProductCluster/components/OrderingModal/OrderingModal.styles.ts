@@ -106,7 +106,7 @@ export const ProductsContainer = styled.div`
 
 export const ProductsGrid = styled.div<{ layout: 'grid' | 'list' | 'compact' }>`
   display: grid;
-  gap: ${theme.spacing[4]};
+  gap: ${theme.spacing[3]};
   
   grid-template-columns: ${({ layout }) => 
     layout === 'list' 

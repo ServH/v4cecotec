@@ -55,12 +55,8 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
           strokeLinecap="round" 
           strokeLinejoin="round"
         >
-          <path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"></path>
-          <path d="M16.5 9.4 7.55 4.24"></path>
-          <polyline points="3.29 7 12 12 20.71 7"></polyline>
-          <line x1="12" y1="22" x2="12" y2="12"></line>
-          <circle cx="18.5" cy="15.5" r="2.5"></circle>
-          <path d="M20.27 17.27 22 19"></path>
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
         </svg>
         <h3>No hay productos para mostrar</h3>
         <p>Selecciona una o más categorías para ver sus productos</p>
@@ -101,6 +97,7 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
             layout={layout}
             isDraggable={false}
             excelData={excelData || undefined}
+            showDetailedView={false} // Aseguramos que no se muestren detalles del Excel en la vista normal
           />
         ))}
       </ProductsGrid>
