@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { Product } from '@/stores/products/products.types';
-import ProductCard from '../../ProductCard';
+import EnhancedProductCard from '../../ProductCard/EnhancedProductCard';
+import { useProductsStore } from '@/stores/products';
 import {
   DraggableContainer,
   CardWrapper,
@@ -34,10 +35,8 @@ const DraggableProductCard: React.FC<DraggableProductCardProps> = ({
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
     onDragStart(e, product, index);
     
-    // Agregar clase para cambiar el cursor en todo el documento
     document.body.classList.add('dragging-active');
     
-    // Ocultar la imagen fantasma predeterminada
     const img = new Image();
     img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
     e.dataTransfer.setDragImage(img, 0, 0);
@@ -89,10 +88,11 @@ const DraggableProductCard: React.FC<DraggableProductCardProps> = ({
       </DragHandle>
       
       <CardWrapper>
-        <ProductCard
+        <EnhancedProductCard
           product={product}
           layout={layout}
           isDraggable={false}
+          excelData={useProductsStore.getState().excelData || undefined}
         />
       </CardWrapper>
     </DraggableContainer>

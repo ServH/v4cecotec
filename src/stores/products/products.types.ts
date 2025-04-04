@@ -12,6 +12,12 @@ export interface Product {
   position?: number;
 }
 
+export interface ProductExcelData {
+  [productId: string]: {
+    [columnName: string]: any;
+  };
+}
+
 export interface ProductsState {
   products: Record<string, Product[]>;
   selectedCategories: string[];
@@ -20,6 +26,8 @@ export interface ProductsState {
   gridLayout: GridLayout;
   orderingMode: boolean;
   customOrder: Record<string, number>;
+  excelData: ProductExcelData | null;
+  isExcelLoaded: boolean;
 }
 
 export interface ProductsActions {
@@ -34,6 +42,8 @@ export interface ProductsActions {
   loadSavedLayout: (layoutName: string) => void;
   saveCurrentLayout: (layoutName: string) => void;
   clearProductsCache: () => void;
+  setExcelData: (data: ProductExcelData) => void;
+  clearExcelData: () => void;
 }
 
 export interface ProductsStore extends ProductsState, ProductsActions {}

@@ -1,4 +1,4 @@
-import { Product, GridLayout } from '@/stores/products/products.types';
+import { Product, GridLayout, ProductExcelData } from '@/stores/products/products.types';
 
 export interface ProductGridProps {
   products: Product[];

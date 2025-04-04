@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { ProductsState, ProductsActions, GridLayout, SavedLayout } from './products.types';
+import { ProductsState, ProductsActions, GridLayout, SavedLayout, ProductExcelData } from './products.types';
 import { fetchProductsByCategory } from '@/services/api/products.service';
 
 export const useProductsStore = create<ProductsState & ProductsActions>()(
@@ -13,6 +13,8 @@ export const useProductsStore = create<ProductsState & ProductsActions>()(
       gridLayout: 'grid',
       orderingMode: false,
       customOrder: {},
+      excelData: null,
+      isExcelLoaded: false,
 
       fetchProducts: async (slug: string, limit = 10) => {
         set({ loading: true, error: null });
@@ -140,13 +142,30 @@ export const useProductsStore = create<ProductsState & ProductsActions>()(
       clearProductsCache: () => {
         set({ products: {} });
       },
+      
+      setExcelData: (data: ProductExcelData) => {
+        set({ 
+          excelData: data,
+          isExcelLoaded: true
+        });
+      },
+      
+      clearExcelData: () => {
+        set({ 
+          excelData: null,
+          isExcelLoaded: false
+        });
+      },
     }),
     {
       name: 'cecotec-products-store',
       partialize: (state) => ({ 
         selectedCategories: state.selectedCategories,
         gridLayout: state.gridLayout,
-        customOrder: state.customOrder
+        customOrder: state.customOrder,
+        isExcelLoaded: state.isExcelLoaded,
+        // No persistimos excelData completo para evitar almacenar demasiados datos
+        // Solo guardamos el estado de si está cargado o no
       }),
       storage: createJSONStorage(() => localStorage),
     }

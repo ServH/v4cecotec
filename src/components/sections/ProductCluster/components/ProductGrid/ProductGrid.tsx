@@ -8,7 +8,8 @@ import {
   LoadingOverlay,
   LoadingSpinner
 } from './ProductGrid.styles';
-import ProductCard from '../ProductCard';
+import EnhancedProductCard from '../ProductCard/EnhancedProductCard';
+import { useProductsStore } from '@/stores/products';
 
 export const ProductGrid: React.FC<ProductGridProps> = ({
   products,
@@ -67,6 +68,9 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
     );
   }
 
+  // Get Excel data from the store
+  const { excelData } = useProductsStore();
+
   return (
     <GridContainer isOrderingMode={isOrderingMode}>
       {isOrderingMode && (
@@ -91,11 +95,12 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
       
       <ProductsGrid layout={layout}>
         {sortedProducts.map((product) => (
-          <ProductCard
+          <EnhancedProductCard
             key={product.id}
             product={product}
             layout={layout}
             isDraggable={false}
+            excelData={excelData || undefined}
           />
         ))}
       </ProductsGrid>

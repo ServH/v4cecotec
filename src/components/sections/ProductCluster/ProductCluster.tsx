@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ProductClusterProps } from './ProductCluster.types';
 import { useProductsStore } from '@/stores/products';
-import { Product } from '@/stores/products/products.types';
+import { Product, ProductExcelData } from '@/stores/products/products.types';
 import {
   ClusterContainer,
   ClusterHeader,
@@ -20,6 +20,7 @@ import ViewControls from './components/ViewControls';
 import ProductGrid from './components/ProductGrid';
 import PDFExporter from './components/PDFExporter';
 import OrderingModal from './components/OrderingModal';
+import ExcelUploader, { ExcelData } from './components/ExcelUploader/ExcelUploader';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 
@@ -34,6 +35,8 @@ export const ProductCluster: React.FC<ProductClusterProps> = ({
     gridLayout,
     orderingMode,
     customOrder,
+    excelData,
+    isExcelLoaded,
     selectCategory,
     deselectCategory,
     clearSelectedCategories,
@@ -43,7 +46,8 @@ export const ProductCluster: React.FC<ProductClusterProps> = ({
     updateProductOrder,
     saveCustomOrder,
     saveCurrentLayout,
-    loadSavedLayout
+    loadSavedLayout,
+    setExcelData
   } = useProductsStore();
   
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
@@ -185,6 +189,34 @@ export const ProductCluster: React.FC<ProductClusterProps> = ({
     }
   };
   
+  // Handle PDF export
+  const handleExport = async () => {
+    if (!hiddenPdfRef.current) return;
+    
+    setCurrentStep('generating');
+    
+    try {
+      await generatePDF(hiddenPdfRef.current, {
+        filename: options.filename.endsWith('.pdf') ? options.filename : `${options.filename}.pdf`,
+        orientation: options.orientation
+      });
+      onClose();
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Error al generar el PDF. Inténtalo de nuevo.');
+      setCurrentStep('preview');
+    }
+  };
+  
+  // Handle Excel file upload
+  const handleExcelDataLoaded = (data: ExcelData, productMapping: ProductExcelData) => {
+    console.log('Excel data loaded:', Object.keys(data).length, 'sheets');
+    console.log('Product mapping created with', Object.keys(productMapping).length, 'products');
+    
+    // Update the store with the Excel data
+    setExcelData(productMapping);
+  };
+  
   // Cargar productos
   useEffect(() => {
     if (selectedCategories.length > 0) {
@@ -200,9 +232,15 @@ export const ProductCluster: React.FC<ProductClusterProps> = ({
         <ClusterHeader>
           <ClusterTitle>Cluster de Productos</ClusterTitle>
           <ClusterDescription>
-            Selecciona categorías para visualizar y organizar sus productos. Puedes guardar tus diseños personalizados.
+            Primero sube el archivo Excel con los detalles de los productos, luego selecciona categorías para visualizar y organizar los productos.
           </ClusterDescription>
         </ClusterHeader>
+        
+        {/* Excel Uploader - Must be loaded before category selection */}
+        <ExcelUploader 
+          onExcelDataLoaded={handleExcelDataLoaded}
+          isLoaded={isExcelLoaded}
+        />
         
         <CategorySelector
           categoriesTree={categoriesTree}
@@ -210,7 +248,7 @@ export const ProductCluster: React.FC<ProductClusterProps> = ({
           selectedCategories={selectedCategories}
           onSelectCategory={selectCategory}
           onDeselectCategory={deselectCategory}
-          disabled={loading}
+          disabled={loading || !isExcelLoaded}
         />
         
         <ViewControls
