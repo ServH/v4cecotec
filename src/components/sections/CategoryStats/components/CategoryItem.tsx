@@ -1,99 +1,146 @@
 import React from 'react';
-import {
-  CategoryItem as StyledCategoryItem,
-  CategoryName,
-  CategoryLink,
-  CategoryStatus,
-  CategoryError,
-} from '../CategoryStats.styles';
+import styled from 'styled-components';
+import { CategoryItemProps } from './CategoryItem.types';
 
-interface CategoryItemProps {
-  slug: string;
-  data: {
-    status: 'OK' | 'KO';
-    error?: string;
-  };
-  categoryPath: string[];
-  onRetry: (slug: string) => void;
-  disabled: boolean;
-}
+const Item = styled.div<{ status: 'OK' | 'KO' }>`
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid var(--border);
+  transition: var(--transition-base);
+  position: relative;
+  overflow: hidden;
+  
+  &:hover {
+    transform: translateX(4px);
+    box-shadow: var(--shadow-md);
+    border-color: ${props => props.status === 'OK' ? 'var(--success)' : 'var(--danger)'}30;
+  }
+  
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: ${props => props.status === 'OK' ? 'var(--success)' : 'var(--danger)'};
+  }
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+`;
 
-const CategoryItem: React.FC<CategoryItemProps> = ({
-  slug,
-  data,
-  categoryPath,
-  onRetry,
-  disabled,
+const Info = styled.div`
+  flex: 1;
+`;
+
+const PathText = styled.div`
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  
+  .separator {
+    color: var(--text-tertiary);
+    font-weight: 400;
+  }
+`;
+
+const SlugText = styled.div`
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-family: monospace;
+  background: var(--background);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  display: inline-block;
+`;
+
+const StatusBadge = styled.span<{ status: 'OK' | 'KO' }>`
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  font-size: 0.875rem;
+  background: ${props => props.status === 'OK' ? 'var(--success)' : 'var(--danger)'}10;
+  color: ${props => props.status === 'OK' ? 'var(--success)' : 'var(--danger)'};
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const Actions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+`;
+
+const RetryButton = styled.button`
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  transition: var(--transition-base);
+  
+  &:hover:not(:disabled) {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const CategoryItem: React.FC<CategoryItemProps> = ({ 
+  slug, 
+  data, 
+  categoryPath, 
+  onRetry, 
+  disabled 
 }) => {
   return (
-    <StyledCategoryItem status={data.status}>
-      <div style={{ 
-        fontSize: '12px', 
-        color: '#5f6368', 
-        marginBottom: '4px',
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '4px'
-      }}>
-        {categoryPath.map((segment, index) => (
-          <React.Fragment key={index}>
-            {index > 0 && <span style={{ margin: '0 2px' }}>&gt;</span>}
-            <span>{segment}</span>
-          </React.Fragment>
-        ))}
-      </div>
-      <CategoryName>
-        {slug}
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button
+    <Item status={data.status}>
+      <Info>
+        <PathText>
+          {categoryPath.map((path, index) => (
+            <React.Fragment key={index}>
+              {index > 0 && <span className="separator">/</span>}
+              {path}
+            </React.Fragment>
+          ))}
+        </PathText>
+        <SlugText>{slug}</SlugText>
+      </Info>
+      
+      <Actions>
+        <StatusBadge status={data.status}>
+          {data.status === 'OK' ? '✅' : '❌'}
+          {data.status === 'OK' ? 'Con productos' : 'Sin productos'}
+        </StatusBadge>
+        
+        {data.status === 'KO' && (
+          <RetryButton 
             onClick={() => onRetry(slug)}
             disabled={disabled}
-            style={{ 
-              padding: '2px 6px', 
-              fontSize: '12px',
-              background: '#f1f3f4',
-              color: '#202124',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
           >
-            Reanalizar
-          </button>
-          <CategoryLink 
-            href={`https://cecotec.es/es/${slug}`} 
-            target="_blank" 
-            rel="noopener noreferrer"
-          >
-            Ver en web
-          </CategoryLink>
-        </div>
-      </CategoryName>
-      <CategoryStatus status={data.status}>
-        {data.status === 'OK' ? 'Con Productos' : 'Sin Productos'}
-      </CategoryStatus>
-      {data.error && (
-        <CategoryError>{data.error}</CategoryError>
-      )}
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px' }}>
-        <CategoryLink 
-          href={`/api/proxy?category=${slug}`}
-          target="_blank" 
-          rel="noopener noreferrer"
-          style={{ fontSize: '12px' }}
-        >
-          Ver API
-        </CategoryLink>
-        <CategoryLink 
-          href={`https://content.cecotec.es/api/v4/products/products-list-by-category/?category=${slug}`}
-          target="_blank" 
-          rel="noopener noreferrer"
-          style={{ fontSize: '12px' }}
-        >
-          API Original
-        </CategoryLink>
-      </div>
-    </StyledCategoryItem>
+            🔄 Reintentar
+          </RetryButton>
+        )}
+      </Actions>
+    </Item>
   );
 };
 
