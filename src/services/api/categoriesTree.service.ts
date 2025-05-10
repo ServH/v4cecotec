@@ -37,6 +37,19 @@ export const extractChildrenSlugs = (categories: Category[]): string[] => {
   return [...new Set(slugs)];
 };
 
+// Obtener todos los slugs de una categoría y sus subcategorías
+export const getCategoryChildrenSlugs = (category: Category): string[] => {
+  const slugs: string[] = [category.slug];
+  
+  if (category.children && category.children.length > 0) {
+    category.children.forEach(child => {
+      slugs.push(...getCategoryChildrenSlugs(child));
+    });
+  }
+  
+  return slugs;
+};
+
 // Función auxiliar para obtener la ruta completa de una categoría
 export const getCategoryPath = (categories: Category[], slug: string): string[] => {
   const path: string[] = [];
